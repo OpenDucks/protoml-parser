@@ -57,7 +57,6 @@
   },
   "dependencies": {
     "deasync": "^0.1.30",
-    "protoml-parser": "^1.1.0-macros",
     "puppeteer": "^24.9.0"
   }
 }
