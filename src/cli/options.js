@@ -1,6 +1,23 @@
 const fs = require("fs");
 const path = require("path");
 
+function extractSection(raw, sectionName) {
+  const escapedSectionName = sectionName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const headerMatch = new RegExp(`^=${escapedSectionName}:`, "m").exec(raw);
+  if (!headerMatch || headerMatch.index == null) {
+    return null;
+  }
+
+  const contentStart = headerMatch.index + headerMatch[0].length;
+  const rest = raw.slice(contentStart);
+  const nextSectionMatch = /^=[a-zA-Z0-9_-]+:/m.exec(rest);
+  const contentEnd = nextSectionMatch
+    ? contentStart + nextSectionMatch.index
+    : raw.length;
+
+  return raw.slice(contentStart, contentEnd).trim() || null;
+}
+
 function parseArgs(argv = process.argv.slice(2)) {
   const options = {
     filename: null,
@@ -69,10 +86,7 @@ function parseArgs(argv = process.argv.slice(2)) {
             const name =
               raw.match(/=name:(.+)/)?.[1]?.trim() ?? path.basename(full);
             const docs =
-              raw
-                .match(/=docs:(.+)/s)?.[1]
-                ?.trim()
-                .split("\n")[0] ?? "(no docs)";
+              extractSection(raw, "docs")?.split("\n")[0] ?? "(no docs)";
             list.push({name, path: full, docs});
           }
         }
@@ -112,8 +126,7 @@ function parseArgs(argv = process.argv.slice(2)) {
 
       const raw = fs.readFileSync(finalPath, "utf8");
       const name = raw.match(/=name:(.+)/)?.[1]?.trim() ?? "(unknown)";
-      const docs =
-        raw.match(/=docs:(.+)/s)?.[1]?.trim() ?? "(no docs provided)";
+      const docs = extractSection(raw, "docs") ?? "(no docs provided)";
       console.log(`\n🧠 Macro: ${name}\n`);
       console.log(docs);
       process.exit(0);
@@ -148,7 +161,7 @@ function parseArgs(argv = process.argv.slice(2)) {
             const raw = fs.readFileSync(full, "utf8");
             const name =
               raw.match(/=name:(.+)/)?.[1]?.trim() ?? path.basename(full);
-            const docs = raw.match(/=docs:(.+)/s)?.[1]?.trim() ?? "";
+            const docs = extractSection(raw, "docs") ?? "";
             const template = raw.match(/=template:(.+)/s)?.[1]?.trim() ?? "";
             result.push({name, docs, template, path: full});
           }
@@ -175,11 +188,7 @@ function parseArgs(argv = process.argv.slice(2)) {
         if (entry.isFile() && entry.name.endsWith(".pml")) {
           const raw = fs.readFileSync(full, "utf8");
           const name = raw.match(/=name:(.+)/)?.[1]?.trim() ?? entry.name;
-          const docs =
-            raw
-              .match(/=docs:(.+)/s)?.[1]
-              ?.trim()
-              ?.split("\n")[0] ?? "";
+          const docs = extractSection(raw, "docs")?.split("\n")[0] ?? "";
           result.push({name, file: entry.name, docs});
         }
       }
@@ -214,9 +223,8 @@ function parseArgs(argv = process.argv.slice(2)) {
 
       const raw = fs.readFileSync(helpFile, "utf8");
       const name = raw.match(/=name:(.+)/)?.[1]?.trim() ?? "(unknown)";
-      const docs = raw.match(/=docs:(.+)/s)?.[1]?.trim() ?? "(no docs)";
-      const examples =
-        raw.match(/=examples:(.+)/s)?.[1]?.trim() ?? "(no examples)";
+      const docs = extractSection(raw, "docs") ?? "(no docs)";
+      const examples = extractSection(raw, "examples") ?? "(no examples)";
 
       console.log(`\n📘 Help: ${name}\n`);
       console.log("📝 Docs:\n" + docs);
