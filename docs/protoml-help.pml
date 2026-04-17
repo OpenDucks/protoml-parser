@@ -6,5 +6,5 @@ Displays detailed documentation for a specific help module located in the `/docs
 The module should be a `.pml` file starting with `@help`, and contain fields such as `=name:`, `=docs:` and optionally `=examples:`.
 
 =examples:
-protoparser --help meeting
-protoparser --help protoml-parse
+protoparser --docs meeting
+protoparser --docs protoml-parser

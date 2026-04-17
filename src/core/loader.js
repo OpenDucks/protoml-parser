@@ -3,6 +3,7 @@ const path = require("path")
 const { tokenize } = require("./tokenizer")
 const { parseBlocks } = require("./blockParser")
 const { resolveMacroPath } = require("../cli/options")
+const { BUILTIN_META_KEYS } = require("./metaKeys")
 
 function resolveMacroFilePath(basePath, file) {
   const projectMacroBase = path.resolve(__dirname, "..", "..", "macros")
@@ -22,6 +23,26 @@ function parseImportedPmlFile(filename, options = {}) {
 
   ast = loadAndMergeImports(ast, path.dirname(filename), options)
   ast = loadAndMergeMacros(ast, path.dirname(filename), options)
+  ast = preserveLocalMetaConstants(ast)
+
+  return ast
+}
+
+function preserveLocalMetaConstants(ast) {
+  if (!Array.isArray(ast.meeting)) return ast
+
+  const localConstants = Object.fromEntries(
+    BUILTIN_META_KEYS.map((key) => [key, ast.meta?.[key]])
+  )
+
+  ast.meeting = ast.meeting.map((line) =>
+    String(line).replace(/@@ref=meta:([A-Za-z0-9_-]+)/g, (match, key) => {
+      if (!BUILTIN_META_KEYS.includes(String(key))) {
+        return match
+      }
+      return localConstants[key] != null ? String(localConstants[key]) : `@@ref=meta:${key}`
+    })
+  )
 
   return ast
 }
@@ -33,10 +54,15 @@ function mergeImportedAst(mainAst, importedAst) {
     mainAst.meta = { ...importedAst.meta, ...mainAst.meta }
   }
 
-  const mergeableBlocks = ["participants", "subjects", "tags", "macros", "imports"]
+  const mergeableBlocks = ["participants", "subjects", "tags", "macros", "imports", "signatures", "approvals"]
   for (const key of mergeableBlocks) {
     if (!importedAst[key]) continue
     mainAst[key] = { ...importedAst[key], ...mainAst[key] }
+  }
+
+  for (const key of ["attachments", "references"]) {
+    if (!Array.isArray(importedAst[key])) continue
+    mainAst[key] = [...importedAst[key], ...(mainAst[key] || [])]
   }
 
   return mainAst

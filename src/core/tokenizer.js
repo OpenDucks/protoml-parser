@@ -14,8 +14,22 @@ function tokenize(text) {
     }
     if (raw.match(/^@\w+:/)) {
       const [key, ...val] = raw.slice(1).split(":");
-      tokens.push({type: "meta", key, value: val.join(":").trim(), line});
+      tokens.push({type: "meta", raw, key, value: val.join(":").trim(), line});
       continue;
+    }
+
+    if (raw.startsWith("@meta=")) {
+      const match = raw.match(/^@meta=([^:]+):(.+)$/);
+      if (match) {
+        tokens.push({
+          type: "meta",
+          raw,
+          key: match[1].trim(),
+          value: match[2].trim(),
+          line,
+        });
+        continue;
+      }
     }
 
     if (raw.startsWith("@macro ")) {

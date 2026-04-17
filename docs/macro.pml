@@ -9,10 +9,13 @@ Macros are especially useful for reusable content blocks, warnings, callouts, la
 
 Templates can include JavaScript and HTML, which are only rendered in the `html` export. JavaScript is not stripped or sanitized.
 
+Paths should be wrapped in double quotes. This is strongly recommended when using `{{macro_dir}}`, because some shells may otherwise interpret characters before ProtoML receives the path.
+
 ⚠️ **Security Notice**: Embedded JS in macros is powerful but potentially dangerous (e.g. XSS). Do not use untrusted macro files.
 
 =examples:
 @macro warningBox "macros/warning.pml"
+@macro image "{{macro_dir}}/image.pml"
 @@macro=warningBox:title=Alert;text=Something went wrong.
 
 A valid macro file might look like this:

@@ -1,4 +1,5 @@
 const { stripInlineComment } = require("./commentUtils")
+const { collectMeetingHeadings } = require("./headingUtils")
 
 function parseInline(ast, options = {}) {
   const parseText = (text) => {
@@ -21,16 +22,20 @@ function parseInline(ast, options = {}) {
 
   // Meeting
   if (Array.isArray(ast.meeting)) {
-  ast.meeting = ast.meeting.map(line => {
-    line = stripInlineComment(line).trim()
+    const headings = collectMeetingHeadings(ast.meeting)
+    let headingIndex = 0
 
-    if (line.startsWith("### ")) return `<h3>${line.slice(4)}</h3>`
-    if (line.startsWith("## ")) return `<h2>${line.slice(3)}</h2>`
-    if (line.startsWith("# ")) return `<h1>${line.slice(2)}</h1>`
+    ast.meeting = ast.meeting.map(line => {
+      line = stripInlineComment(line).trim()
 
-    return parseText(line)
-  })
-}
+      if (line.match(/^#{1,6}\s+/)) {
+        const heading = headings[headingIndex++]
+        return `<h${heading.level} id="${heading.id}">${parseText(heading.text)}</h${heading.level}>`
+      }
+
+      return parseText(line)
+    })
+  }
 
 
   // Notes

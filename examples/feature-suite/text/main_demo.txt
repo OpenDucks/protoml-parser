@@ -1,0 +1,179 @@
+Feature Suite - 18.04.2026
+==========================
+
+Meta
+----
+date: 18.04.2026
+author: Alex Demo
+status: review
+record_id: FEATURE-DEMO-2026-01
+import_scope: Imported Section
+version: 2.0
+confidentiality: internal
+effective_date: 18.04.2026
+valid_until: 31.12.2026
+review_date: 01.07.2026
+location: Berlin Lab
+department: Platform Engineering
+doc_type: Demo Protocol
+
+Participants
+------------
+Casey Example (casey) - casey@example.com
+Alex Demo (alex) - alex@example.com
+Sam Parser (sam) - sam@example.com
+
+Subjects
+--------
+0: Feature suite walkthrough
+1: Import handling
+2: Shared tag analysis
+20: Imported section status
+
+Tags
+----
+blocked: Blocked (total=0, open=0, done=0)
+review: Needs review (total=1, open=0, done=1)
+followup: Follow-up (total=1, open=1, done=0)
+important: Locally overridden important tag (total=1, open=1, done=0)
+custom: Custom local tag (total=1, open=1, done=0)
+
+Signatures
+----------
+lead: Alex Demo | Project Lead | 18.04.2026 - Signed digitally
+
+Approvals
+---------
+security: Security Review | approved | Sam Parser | 18.04.2026 - Reviewed in demo scope
+
+Tasks
+-----
+[ ] Review import chain
+  assigned=Alex Demo | subject=Import handling | tag=Locally overridden important tag
+[x] Verify shared tags
+  assigned=Sam Parser | subject=Shared tag analysis | tag=Needs review
+[ ] Capture open questions
+  assigned=Alex Demo | subject=Feature suite walkthrough | tag=Follow-up
+[ ] Document demo scenario
+  assigned=Sam Parser | subject=Feature suite walkthrough | tag=Custom local tag
+
+Notes
+-----
+- Main demo uses imports , shared tags and macros together.
+- The local `important` tag overrides the imported label inside this document.
+
+References
+----------
+ProtoML README -> https://github.com/Ente/protoml-parser
+
+Attachments
+-----------
+Demo graph -> main-demo-graph.mmd
+Imported HTML snippet -> snippet.html
+
+Meeting
+-------
+Title: Feature Walkthrough
+
+Table of Contents
+- Main Demo -> #main-demo
+- Participants -> #participants
+- Topic -> #topic
+- Imported HTML -> #imported-html
+- Imported ProtoML -> #imported-protoml
+- Imported Topic -> #imported-topic
+- Timeline -> #timeline
+- Summary -> #summary
+
+Main Demo
+
+Participants
+
+Alex Demo , Sam Parser
+
+Topic
+
+Feature suite walkthrough
+
+Author: Alex Demo
+
+Version: 2.0
+
+Date: 18.04.2026
+
+Status: review
+
+Record ID: FEATURE-DEMO-2026-01
+
+Confidentiality: internal
+
+Owner email: alex@example.com
+
+demo
+
+⚠️ Watch imports carefully
+
+> This file is meant to exercise multiple ProtoML features at once.
+>
+> – ProtoML demo
+
+Imported HTML
+
+Imported HTML snippet: This block comes from snippet.html.
+
+Imported ProtoML
+
+Imported Topic
+
+Imported section status
+
+Imported author: Casey Example
+
+Imported status: draft
+
+Imported owner mail: casey@example.com
+
+imported
+
+> Imported ProtoML sections keep their own meeting body.
+>
+> – Casey Example
+
+Imported section readiness (55%)
+
+Timeline
+
+- 09:00
+
+ Kickoff
+
+ 👤 Alex Demo
+
+- 09:30
+
+ Import review
+
+ 👤 Sam Parser
+
+Summary
+
+Meeting Summary
+
+Overall: 5/5
+
+Feature suite completed successfully with imports, tags and macros.
+
+Signature
+
+Alex Demo
+Project Lead
+18.04.2026
+Signed digitally
+
+Approval
+
+Security Review
+approved
+Sam Parser
+18.04.2026
+Reviewed in demo scope

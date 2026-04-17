@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Feature Suite - 18.04.2026</title>
+  <style>body {
+  font-family: system-ui, sans-serif;
+  background: #ffffff;
+  color: #222;
+  padding: 2rem;
+  max-width: 800px;
+  margin: auto;
+}
+
+h1 {
+  font-size: 2rem;
+  border-bottom: 2px solid #ccc;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: 1.4rem;
+  margin-top: 2rem;
+  border-left: 4px solid #4a90e2;
+  padding-left: 0.5rem;
+}
+
+ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+.done {
+  text-decoration: line-through;
+  color: #999;
+}
+
+a {
+  color: #4a90e2;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+section {
+  margin-bottom: 2rem;
+}
+
+.tag {
+  background: #eee;
+  padding: 0.2em 0.5em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  margin-left: 0.5rem;
+  display: inline-block;
+}
+
+.meta {
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 0.2em;
+}
+
+.tag-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.tag-card {
+  border: 1px solid #ddd;
+  border-left: 4px solid #4a90e2;
+  border-radius: 8px;
+  padding: 0.9rem;
+  background: #fafafa;
+}
+
+.tag-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.tag-card-head code {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.tag-card-stats {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+button {
+  background-color: #4a90e2;
+  color: white;
+  padding: 0.5em 1em;
+  font-size: 1rem;
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+button:hover {
+  background-color: #3b78c5;
+}
+
+button:active {
+  background-color: #336aa8;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+</style>
+</head>
+<body>
+<h1>Feature Suite - 18.04.2026</h1>
+<section><h2>Participants</h2><ul>
+<li>Casey Example (casey)</li>
+<li>Alex Demo (alex)</li>
+<li>Sam Parser (sam)</li>
+</ul></section>
+<section><h2>Subjects</h2><ul>
+<li><b>0:</b> Feature suite walkthrough</li>
+<li><b>1:</b> Import handling</li>
+<li><b>2:</b> Shared tag analysis</li>
+<li><b>20:</b> Imported section status</li>
+</ul></section>
+<section><h2>Tags</h2><div class="tag-summary">
+<article class="tag-card tag-blocked"><div class="tag-card-head"><span class="tag">Blocked</span><code>@tag=blocked</code></div><div class="tag-card-stats"><span>Total: 0</span><span>Open: 0</span><span>Done: 0</span></div></article>
+<article class="tag-card tag-review"><div class="tag-card-head"><span class="tag">Needs review</span><code>@tag=review</code></div><div class="tag-card-stats"><span>Total: 1</span><span>Open: 0</span><span>Done: 1</span></div></article>
+<article class="tag-card tag-followup"><div class="tag-card-head"><span class="tag">Follow-up</span><code>@tag=followup</code></div><div class="tag-card-stats"><span>Total: 1</span><span>Open: 1</span><span>Done: 0</span></div></article>
+<article class="tag-card tag-important"><div class="tag-card-head"><span class="tag">Locally overridden important tag</span><code>@tag=important</code></div><div class="tag-card-stats"><span>Total: 1</span><span>Open: 1</span><span>Done: 0</span></div></article>
+<article class="tag-card tag-custom"><div class="tag-card-head"><span class="tag">Custom local tag</span><code>@tag=custom</code></div><div class="tag-card-stats"><span>Total: 1</span><span>Open: 1</span><span>Done: 0</span></div></article>
+</div></section>
+<section><h2>Tasks</h2><ul>
+<li class="task-tag-important">Review import chain<div class="meta">Assigned to: Alex Demo • Subject: Import handling • Tag: <span class="tag">Locally overridden important tag</span></div></li>
+<li class="done task-tag-review">Verify shared tags<div class="meta">Assigned to: Sam Parser • Subject: Shared tag analysis • Tag: <span class="tag">Needs review</span></div></li>
+<li class="task-tag-followup">Capture open questions<div class="meta">Assigned to: Alex Demo • Subject: Feature suite walkthrough • Tag: <span class="tag">Follow-up</span></div></li>
+<li class="task-tag-custom">Document demo scenario<div class="meta">Assigned to: Sam Parser • Subject: Feature suite walkthrough • Tag: <span class="tag">Custom local tag</span></div></li>
+</ul></section>
+<section><h2>Meta</h2><ul>
+<li><b>date:</b> 18.04.2026</li>
+<li><b>author:</b> Alex Demo</li>
+<li><b>import_scope:</b> Imported Section</li>
+<li><b>version:</b> 2.0</li>
+<li><b>location:</b> Berlin Lab</li>
+<li><b>department:</b> Platform Engineering</li>
+<li><b>doc_type:</b> Demo Protocol</li>
+</ul></section>
+<section><h2>Notes</h2><ul>
+<li>Main demo uses <b>imports </b>, shared tags and macros together.</li>
+<li>The local `important` tag overrides the imported label inside this document.</li>
+</ul></section>
+<section><h2>References</h2><ul>
+<li><a href="https://github.com/Ente/protoml-parser" target="_blank">ProtoML README</a></li>
+</ul></section>
+<section><h2>Attachments</h2><ul>
+<li><a href="main-demo-graph.mmd" target="_blank">Demo graph</a></li>
+<li><a href="snippet.html" target="_blank">Imported HTML snippet</a></li>
+</ul></section>
+<section><h2>Feature Walkthrough</h2>
+<nav class="toc"><strong>Table of Contents</strong><ul><li class="toc-level-1"><a href="#main-demo">Main Demo</a></li><li class="toc-level-2"><a href="#participants">Participants</a></li><li class="toc-level-2"><a href="#topic">Topic</a></li><li class="toc-level-2"><a href="#imported-html">Imported HTML</a></li><li class="toc-level-2"><a href="#imported-protoml">Imported ProtoML</a></li><li class="toc-level-2"><a href="#imported-topic">Imported Topic</a></li><li class="toc-level-2"><a href="#timeline">Timeline</a></li><li class="toc-level-2"><a href="#summary">Summary</a></li></ul></nav>
+<h1 id="main-demo">Main Demo</h1>
+<h2 id="participants">Participants</h2>
+<p>Alex Demo , Sam Parser</p>
+<h2 id="topic">Topic</h2>
+<p>Feature suite walkthrough</p>
+<p>Author: Alex Demo</p>
+<p>Version: 2.0</p>
+<p>Date: 18.04.2026</p>
+<p>Owner email: alex@example.com</p>
+<span style="background:#;color:#fff;border-radius:999px;padding:0.2em 0.7em;font-size:0.9em">
+  demo
+</span>
+<div style="background:#ffcdd2;padding:1em;border-left:5px solid #f44336">
+  <strong>⚠️ Watch imports carefully</strong><br>
+</div>
+<blockquote style="border-left:4px solid #999;padding-left:1em;color:#555">
+  <em>This file is meant to exercise multiple ProtoML features at once.</em>
+  <br><small>– ProtoML demo</small>
+</blockquote>
+<h2 id="imported-html">Imported HTML</h2>
+<div class="demo-snippet">
+<p><strong>Imported HTML snippet:</strong> This block comes from <code>snippet.html</code>.</p>
+</div>
+<p></p>
+<h2 id="imported-protoml">Imported ProtoML</h2>
+<h2 id="imported-topic">Imported Topic</h2>
+<p>Imported section status</p>
+<p>Imported author: Casey Example</p>
+<p>Imported owner mail: casey@example.com</p>
+<span style="background:#;color:#fff;border-radius:999px;padding:0.2em 0.7em;font-size:0.9em">
+  imported
+</span>
+<blockquote style="border-left:4px solid #999;padding-left:1em;color:#555">
+  <em>Imported ProtoML sections keep their own meeting body.</em>
+  <br><small>– Casey Example</small>
+</blockquote>
+<div class="progress-container">
+  <div class="progress-label">Imported section readiness (55%)</div>
+  <div class="progress-bar-outer">
+    <div class="progress-bar-inner" style="width: 55%; background-color: #ff8c00;"></div>
+  </div>
+</div>
+<style>
+  .progress-container {
+    margin: 1em 0;
+    font-family: sans-serif;
+  }
+
+  .progress-label {
+    margin-bottom: 0.25em;
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+
+  .progress-bar-outer {
+    background-color: #333;
+    border-radius: 5px;
+    overflow: hidden;
+    height: 20px;
+  }
+
+  .progress-bar-inner {
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+</style>
+<h2 id="timeline">Timeline</h2>
+<div class="timeline-wrapper">
+  <ul class="timeline-list">
+<style>
+  .timeline-wrapper {
+    border-left: 4px solid #00bcd4;
+    padding-left: 1.5em;
+    margin: 1.5em 0;
+  }
+
+  .timeline-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+</style>
+<li class="timeline-entry">
+  <div class="timeline-time">09:00</div>
+  <div class="timeline-content">
+    <strong>Kickoff</strong><br>
+    <span class="timeline-person">👤 Alex Demo</span>
+  </div>
+</li>
+<style>
+  .timeline-entry {
+    position: relative;
+    margin: 1.2em 0;
+  }
+
+  .timeline-time {
+    position: absolute;
+    left: -6em;
+    width: 5em;
+    text-align: right;
+    color: #777;
+    font-size: 0.9em;
+  }
+
+  .timeline-content {
+    background: #f9f9f9;
+    color: #222;
+    padding: 0.75em 1em;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  .timeline-person {
+    font-size: 0.85em;
+    color: #555;
+  }
+</style>
+<li class="timeline-entry">
+  <div class="timeline-time">09:30</div>
+  <div class="timeline-content">
+    <strong>Import review</strong><br>
+    <span class="timeline-person">👤 Sam Parser</span>
+  </div>
+</li>
+<style>
+  .timeline-entry {
+    position: relative;
+    margin: 1.2em 0;
+  }
+
+  .timeline-time {
+    position: absolute;
+    left: -6em;
+    width: 5em;
+    text-align: right;
+    color: #777;
+    font-size: 0.9em;
+  }
+
+  .timeline-content {
+    background: #f9f9f9;
+    color: #222;
+    padding: 0.75em 1em;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  .timeline-person {
+    font-size: 0.85em;
+    color: #555;
+  }
+</style>
+</ul>
+</div>
+<h2 id="summary">Summary</h2>
+<div class="meeting-summary">
+  <h4>Meeting Summary</h4>
+  <p><strong>Overall:</strong> 5/5</p>
+  <p>Feature suite completed successfully with imports, tags and macros.</p>
+</div>
+<style>
+  .meeting-summary {
+    background: #eeeeee;
+    padding: 1em;
+    border-radius: 5px;
+    margin-top: 2em;
+  }
+</style>
+<div class="signature-block"><h3>Signature</h3><strong>Alex Demo</strong><br><span class="signature-role">Project Lead</span><br><span class="signature-date">18.04.2026</span><br><span class="signature-note">Signed digitally</span></div>
+<div class="approval-block"><h3>Approval</h3><strong>Security Review</strong><br><span class="approval-status">approved</span><br><span class="approval-by">Sam Parser</span><br><span class="approval-date">18.04.2026</span><br><span class="approval-notes">Reviewed in demo scope</span></div>
+<img src="https://placehold.co/480x240" alt="Image" style="max-width: 100%; height: auto;">
+</section>
+</body></html>

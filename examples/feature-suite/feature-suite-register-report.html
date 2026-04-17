@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ProtoML Register - feature-suite</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #fff; color: #222; margin: 0; padding: 2rem; max-width: 1100px; margin-inline: auto; }
+    h1 { font-size: 2rem; margin-bottom: 1rem; border-bottom: 2px solid #ddd; padding-bottom: 0.5rem; }
+    h2 { margin-top: 2rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; }
+    .card, .doc-card { border: 1px solid #ddd; border-radius: 10px; padding: 0.9rem 1rem; background: #fafafa; }
+    .card span { display: block; font-size: 1.4rem; margin-top: 0.3rem; }
+    .attention li { margin-bottom: 0.35rem; }
+    .meta { color: #555; font-size: 0.92rem; margin-top: 0.3rem; }
+    .missing { color: #8a5a00; font-weight: 600; }
+    .flag { color: #b00020; font-weight: 600; }
+    .path { margin-top: 0.6rem; }
+    code { background: #f0f0f0; padding: 0.12rem 0.28rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>ProtoML Register - feature-suite</h1>
+  <p><code>C:\Users\diege\Documents\GitHub\protoml-parser\examples\feature-suite</code></p>
+  <section>
+    <h2>Attention</h2>
+    <ul class="attention">
+      <li>0 documents without record_id</li>
+      <li>1 documents without version</li>
+      <li>0 documents without author</li>
+      <li>0 documents without status</li>
+      <li>0 documents past valid_until</li>
+      <li>0 documents due for review in the next 30 days</li>
+      <li>2 documents with open tasks</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Status Summary</h2>
+    <div class="grid"><article class="card"><strong>draft</strong><span>1</span></article><article class="card"><strong>review</strong><span>1</span></article></div>
+  </section>
+  <section>
+    <h2>Documents</h2>
+    <div class="grid"><article class="doc-card">
+      <h3>Imported Section</h3>
+      <div class="meta"><code>IMPORTED-SEC-18</code></div>
+      <div class="meta">status=draft • author=Casey Example • version=(missing)</div>
+      <div class="meta">review_date=- • valid_until=-</div>
+      <div class="meta flag">open tasks: 2</div>
+      <div class="meta missing">missing: version</div>
+      <div class="path"><code>C:\Users\diege\Documents\GitHub\protoml-parser\examples\feature-suite\imported_section.pml</code></div>
+    </article><article class="doc-card">
+      <h3>Feature Suite - {{date}}</h3>
+      <div class="meta"><code>FEATURE-DEMO-2026-01</code></div>
+      <div class="meta">status=review • author=Alex Demo • version=2.0</div>
+      <div class="meta">review_date=01.07.2026 • valid_until=31.12.2026</div>
+      <div class="meta flag">open tasks: 3</div>
+      
+      <div class="path"><code>C:\Users\diege\Documents\GitHub\protoml-parser\examples\feature-suite\main_demo.pml</code></div>
+    </article></div>
+  </section>
+</body>
+</html>

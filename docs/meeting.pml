@@ -1,18 +1,20 @@
 @help
 =name:meeting
 =docs:
-The `@meeting` module is used to structure and document meetings within a ProtoML file.  
-It is ideal for creating meeting protocols, agendas, discussion points, and decisions – especially when combined with modules like `@participants`, `@subjects`, `@tasks`, and `@notes`.
+The `@meeting` block is used to structure and document meetings within a ProtoML file.
 
-You can use `@@e=...` to dynamically insert previously defined entries (like subjects or participants), and `@@macro=...` to embed macros directly into your meeting notes.
+It is useful for meeting protocols, agendas, discussion points, and decisions, especially when combined with `@participants`, `@subjects`, `@tasks`, and `@notes`.
 
-The layout typically follows a Markdown-style syntax (`#`, `##`, `-`, etc.) for readability and export formatting.
+You can use `@@e=...` to insert previously defined entries such as subjects, participants, or tags, and `@@macro=...` to embed macros directly into the meeting content.
+
+The layout typically follows lightweight Markdown-style syntax such as `#`, `##`, and plain text lines.
+
+`@meeting` can also be written as `@meeting "Custom Title"` to set the rendered meeting section title.
 
 =examples:
-@meeting
-# Meeting Title: @@e=0              // echoes subject ID 0 from @subjects
+@meeting "Minutes"
+# Meeting Title: @@e=0
 ## Participants
-@@e=pt1 , @@e=pt2                   // echoes registered participants
+@@e=pt1 , @@e=pt2
 ## Topics
-@@macro=myMacro:title=IMPORTANT;text=@@e=1  // inserts macro with dynamic subject text
-...
+@@macro=myMacro:title=IMPORTANT;text=@@e=1

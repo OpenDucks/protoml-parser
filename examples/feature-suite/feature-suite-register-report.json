@@ -1,0 +1,93 @@
+{
+  "path": "C:\\Users\\diege\\Documents\\GitHub\\protoml-parser\\examples\\feature-suite",
+  "title": "ProtoML Register - feature-suite",
+  "generated_at": "2026-04-17T15:12:33.346Z",
+  "summary": {
+    "total_files": 2,
+    "status_summary": {
+      "draft": 1,
+      "review": 1
+    },
+    "attention": {
+      "missing_record_id": 0,
+      "missing_version": 1,
+      "missing_author": 0,
+      "missing_status": 0,
+      "expired_documents": 0,
+      "review_due_soon": 0,
+      "documents_with_open_tasks": 2
+    }
+  },
+  "documents": [
+    {
+      "path": "C:\\Users\\diege\\Documents\\GitHub\\protoml-parser\\examples\\feature-suite\\imported_section.pml",
+      "file": "imported_section.pml",
+      "title": "Imported Section",
+      "meta": {
+        "date": "18.04.2026",
+        "author": "Casey Example",
+        "version": null,
+        "status": "draft",
+        "record_id": "IMPORTED-SEC-18",
+        "confidentiality": null,
+        "effective_date": null,
+        "valid_until": null,
+        "review_date": null
+      },
+      "stats": {
+        "participants": 1,
+        "subjects": 1,
+        "tags": 3,
+        "tasks_total": 2,
+        "tasks_open": 2,
+        "tasks_done": 0,
+        "notes": 1,
+        "meeting_lines": 8,
+        "imports": 0,
+        "tag_imports": 1
+      },
+      "governance": {
+        "missing": [
+          "version"
+        ],
+        "expired": false,
+        "review_due_days": null,
+        "has_open_tasks": true
+      }
+    },
+    {
+      "path": "C:\\Users\\diege\\Documents\\GitHub\\protoml-parser\\examples\\feature-suite\\main_demo.pml",
+      "file": "main_demo.pml",
+      "title": "Feature Suite - {{date}}",
+      "meta": {
+        "date": "18.04.2026",
+        "author": "Alex Demo",
+        "version": "2.0",
+        "status": "review",
+        "record_id": "FEATURE-DEMO-2026-01",
+        "confidentiality": "internal",
+        "effective_date": "18.04.2026",
+        "valid_until": "31.12.2026",
+        "review_date": "01.07.2026"
+      },
+      "stats": {
+        "participants": 3,
+        "subjects": 4,
+        "tags": 5,
+        "tasks_total": 4,
+        "tasks_open": 3,
+        "tasks_done": 1,
+        "notes": 2,
+        "meeting_lines": 40,
+        "imports": 2,
+        "tag_imports": 1
+      },
+      "governance": {
+        "missing": [],
+        "expired": false,
+        "review_due_days": 74,
+        "has_open_tasks": true
+      }
+    }
+  ]
+}

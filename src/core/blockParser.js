@@ -45,7 +45,7 @@ function parseBlocks(tokens, options = {}) {
         result[currentBlock] =
           currentBlock === "meeting"
             ? []
-            : currentBlock === "participants" || currentBlock === "tags"
+            : currentBlock === "participants" || currentBlock === "tags" || currentBlock === "signatures" || currentBlock === "approvals"
             ? {}
             : [];
       }
@@ -61,6 +61,23 @@ function parseBlocks(tokens, options = {}) {
             name: name?.trim(),
             alias: alias?.trim(),
             email: email?.trim(),
+          };
+        } else if (currentBlock === "signatures") {
+          const [name, role, date, note] = token.value.split(",");
+          result[currentBlock][token.key] = {
+            name: name?.trim(),
+            role: role?.trim(),
+            date: date?.trim(),
+            note: note?.trim(),
+          };
+        } else if (currentBlock === "approvals") {
+          const [label, status, by, date, notes] = token.value.split(",");
+          result[currentBlock][token.key] = {
+            label: label?.trim(),
+            status: status?.trim(),
+            by: by?.trim(),
+            date: date?.trim(),
+            notes: notes?.trim(),
           };
         } else if (currentBlock === "tags") {
           result[currentBlock][token.key] = token.value;

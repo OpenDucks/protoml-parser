@@ -1,0 +1,28 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=protoml-help.chm
+Contents file=TOC.hhc
+Default topic=toc.html
+Display compile progress=No
+Full-text search=Yes
+Index file=Index.hhk
+Language=0x409 English (United States)
+Title=ProtoML Help
+Version=1.3.1+build37
+
+[FILES]
+toc.html
+TOC.hhc
+Index.hhk
+html_docs/help.css
+html_docs/getting_started.html
+html_docs/updates_removing.html
+html_docs/basic_syntax.html
+html_docs/cli_commands.html
+html_docs/macro_usage.html
+html_docs/macro_development.html
+html_docs/outputs.html
+html_docs/styles.html
+html_docs/web_parser.html
+html_docs/protoviewer.html
+html_docs/local_development.html
