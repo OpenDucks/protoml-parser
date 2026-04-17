@@ -1,3 +1,5 @@
+const { stripInlineComment } = require("./commentUtils");
+
 function parseBlocks(tokens, options = {}) {
   const result = {};
   let currentBlock = null;
@@ -12,6 +14,27 @@ function parseBlocks(tokens, options = {}) {
     if (token.type === "macro") {
       result.macros = result.macros || {};
       result.macros[token.name.trim()] = token.file.trim();
+      continue;
+    }
+
+    if (token.type === "directive") {
+      result.meta = result.meta || {};
+      result.meta[token.name] = token.value;
+      continue;
+    }
+
+    if (token.type === "tagsImport") {
+      result.tags_import = result.tags_import || [];
+      result.tags_import.push(token.file.trim());
+      continue;
+    }
+
+    if (token.type === "import") {
+      result.imports = result.imports || {};
+      result.imports[token.name.trim()] = {
+        file: token.file.trim(),
+        format: token.format,
+      };
       continue;
     }
 
@@ -52,16 +75,17 @@ function parseBlocks(tokens, options = {}) {
           const done = token.value.startsWith("[x]");
 
           const ptp = token.raw.match(/@ptp=([^\s]+)/)?.[1] || null;
-          const subject = token.raw.match(/=([^\s]+)/)?.[1] || null;
+          const subject = [...token.raw.matchAll(/(?:\s|^)=([^\s]+)/g)].pop()?.[1] || null;
           const tag = token.raw.match(/@tag=([^\s]+)/)?.[1] || null;
 
-          const cleanedText = token.value
+          const cleanedText = stripInlineComment(
+            token.value
             .replace(/^\[(x| )\]/, "")
             .replace(/@ptp=[^\s]+/g, "")
             .replace(/@tag=[^\s]+/g, "")
             .replace(/=[^\s]+/g, "")
-            .replace(/\/\/.*/, "") // comments
-            .trim();
+            .trim()
+          ).trim();
 
           result[currentBlock].push({
             raw: token.raw, // raw line (für referenceLinker)

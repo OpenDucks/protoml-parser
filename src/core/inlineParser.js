@@ -1,3 +1,5 @@
+const { stripInlineComment } = require("./commentUtils")
+
 function parseInline(ast, options = {}) {
   const parseText = (text) => {
     if (!text || typeof text !== "string") return text
@@ -20,8 +22,7 @@ function parseInline(ast, options = {}) {
   // Meeting
   if (Array.isArray(ast.meeting)) {
   ast.meeting = ast.meeting.map(line => {
-    // Optional: Kommentar entfernen
-    line = line.replace(/\/\/.*/, "").trim()
+    line = stripInlineComment(line).trim()
 
     if (line.startsWith("### ")) return `<h3>${line.slice(4)}</h3>`
     if (line.startsWith("## ")) return `<h2>${line.slice(3)}</h2>`

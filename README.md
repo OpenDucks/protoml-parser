@@ -1,255 +1,644 @@
-# ProtoML - A minimal structured protocol language
+# ProtoML
 
-ProtoML is a lightweight, declarative markup language designed for writing and structuring meeting protocols, notes and task lists in a human-readable and machine-parseable format.
+ProtoML is a lightweight markup language for structured meeting documents. It is designed for meeting notes, tasks, reusable snippets, shared tags, and export to HTML, PDF, and JSON.
 
-## Installing the Parser
+This repository contains:
 
-- Clone the repository: `git clone https://github.com/ente/protoml-parser.git`
-- Install the app: `npm install -g .`
-- Restart your terminal
-- Run `protoparser test.pml html` to convert a file named `test.pml` to HTML.
-- Run `protoviewer test.pml [theme]` to view the file with the built-in viewer.
+- the parser
+- the HTML and PDF renderers
+- the CLI tools
+- the Electron viewer
+- bundled macros
 
-## Install via NPM
+## Installation
 
-Requires Node 18
+From source:
+
+```bash
+git clone https://github.com/ente/protoml-parser.git
+cd protoml-parser
+npm install -g .
+```
+
+From npm:
 
 ```bash
 npm install -g protoml-parser
 ```
 
-## Key Concepts
+Requires Node 18.
 
-- **Purely declarative** - no logic, no runtime, just the code
-- **Flat structure** with modular references
-- **External resources** such as tags or files are importable
-- **Styling & referencing syntax** included
-- **Fully parsable into structured JSON, HTML or PDF files**
+## Quick Start
 
-## Syntax Overview
-| Symbol | Meaning |
-| ------ | ------- |
-| `@command` | Starts a data block (e.g. `@participants`) |
-| `@@command` | Used inside `@meeting`, acts as inline macro |
-| `=` | Declare an ID for referencing |
-| `:` | Assigns value to the declared ID |
-| `-` | Declares a plain list entry |
-| `#`, `##` | Markdown-style headers |
-| `//` | Comment, ignored by parser |
-| `-b Text -b-`, `-i Text -i-`, `-a=url Text -a-` | Inline text styling |
-
-## Example
-
-All available commands are used in this example.
+Example file:
 
 ```plaintext
-@tags_import "tags.pml"
-@macro myMacro "myMacro.pml"
+@tags_import "_tags.pml"
+@protocol "Project Protocol - {{date}}"
 
-@date:21.05.2025
-@participants // or @ptp
-=pt1=John Doe,jdoe,jdoe@example.com
-=pt2=Jane Doe
+@date:24.05.2025
+
+@participants
+=pt1:John Doe,jdoe,jdoe@example.com
+=pt2:Jane Doe,jane,jane@example.com
 
 @subjects
-=0:Project Status: TimeTrack
-=1:Security: TLS Check
+=0:Project status
+=1:Next steps
 
 @tasks
--[ ] Renew SSL certificate @ptp=pt1 =1 @tag=important // Assigns the tasks to participant "pt1", assigns it to subject with ID 1 and tags it with the "important" tag
+-[ ] Prepare release notes @ptp=pt1 =1 @tag=important
+-[x] Review parser output @ptp=pt2 =0 @tag=1
 
 @notes
-- PDF export works -b very well -b-
+- HTML export works -b very well -b-
 
-@meeting
-# Meeting Title: @@e=0 // echoes value of ID 0
+@meeting "Minutes"
+# Weekly Sync
 ## Participants
-@@e=pt1 , @@e=pt2
-## Some topic
-@@macro=myMacro:title=IMPORTANT;text=@@e=1
-.....
-
+@@e=pt1, @@e=pt2
+## Topic
+@@e=0
 ```
 
-## External tags file (tags.pml) - not fully supported, yet
+Render it:
+
+```bash
+protoparser test.pml html
+```
+
+Open it in the viewer:
+
+```bash
+protoviewer test.pml
+```
+
+Try the complete feature suite:
+
+```bash
+protoparser examples/feature-suite/main_demo.pml html
+protoparser tags examples/feature-suite/_workflow_tags.pml statistics
+```
+
+`main_demo.pml` loads the imported `.pml`, the imported `.html`, shared tag files, and macros.
+The tag statistics command can be run against either shared tag file in the feature suite because the tag files are cross-referenced via `@tags_import`.
+
+## Concepts
+
+ProtoML is built around a few core ideas:
+
+- block-based structure with commands such as `@participants` or `@meeting`
+- small inline reference syntax such as `@@e=pt1`
+- reusable external content via `@import`
+- reusable external templates via `@macro`
+- shared task classification via `@tags` and `@tags_import`
+
+## Syntax Overview
+
+### Meta fields
+
+Meta fields use `@key:value`.
+
+Examples:
 
 ```plaintext
-@tags // this command behaves differently when used in the tags.pml
-=0:Important
+@date:24.05.2025
+@location:Berlin
+```
+
+Special meta and directive commands:
+
+- `@protocol "..."` sets the HTML `<title>` and top page heading
+- `@meeting "..."` starts the `@meeting` block and sets the meeting section heading
+- `@title "..."` is used by shared tag files for tag analysis output
+
+`@protocol "..."` supports placeholders such as `{{date}}`.
+
+Example:
+
+```plaintext
+@protocol "Protocol - {{date}}"
+@meeting "Minutes"
+```
+
+### Core blocks
+
+Supported blocks:
+
+- `@participants`
+- `@subjects`
+- `@tasks`
+- `@notes`
+- `@meeting`
+- `@tags`
+- `@tag_sources`
+
+Example:
+
+```plaintext
+@participants
+=pt1:John Doe,jdoe,jdoe@example.com
+
+@subjects
+=0:Project status
+
+@tags
 =important:Critical, high priority
 ```
 
-## External macro file (myMacro.pml)
+### Declarations
 
-Macros allow you to do any styling the render is not able to understand, the below's example therefore can only affectively be used with the `html` render.
+Declarations use `=id:value`. Their meaning depends on the current block.
 
-* `=name:myMacro` defines the name to be used when accessing the macro like `@@macro=myMacro:....`
-* `=template:` defines what the macro does, this can be multiline.
+- in `@participants`: `=id:name,alias,email`
+- in `@subjects`: `=id:text`
+- in `@tags`: `=id:label`
 
-**For `html` renders, keep in mind, that `protoparser` does not remove JS code contained inside a `html` macro.
-This could lead to possible security risks like XSS**
-The behavior for this will be changed in release v1.1.0, allowing native JS integration to your scripts.
+Examples:
+
+```plaintext
+=pt1:John Doe,jdoe,jdoe@example.com
+=0:Project status
+=important:Critical, high priority
+```
+
+### Tasks
+
+Tasks use `-[ ]` for open items and `-[x]` for completed items.
+
+Supported task metadata:
+
+- `@ptp=id` assigns the task to a participant
+- `=subjectId` links the task to a subject
+- `@tag=id` assigns a tag
+
+Example:
+
+```plaintext
+@tasks
+-[ ] Prepare release notes @ptp=pt1 =1 @tag=important
+-[x] Review parser output @ptp=pt2 =0 @tag=1
+```
+
+### Meeting content
+
+The `@meeting` block is freeform content with lightweight formatting and inline commands.
+
+Supported inside `@meeting`:
+
+- headings: `#`, `##`, `###`
+- inline references: `@@e=id`
+- macros: `@@macro=name:param=value`
+- content imports: `@@import=name` and `@@output=name`
+- inline styling:
+  - `-b text -b-`
+  - `-i text -i-`
+  - `-a=url label -a-`
+
+Example:
+
+```plaintext
+@meeting "Weekly Notes"
+# Weekly Sync
+## Participants
+@@e=pt1, @@e=pt2
+## Topic
+@@e=0
+@@macro=badge:text=review
+```
+
+### Inline references
+
+`@@e=id` resolves values from:
+
+- `@subjects`
+- `@participants`
+- `@tags`
+
+Examples:
+
+```plaintext
+@@e=pt1
+@@e=0
+@@e=important
+```
+
+## Imports
+
+ProtoML supports shared tags and content imports.
+
+### Tag imports
+
+`@tags_import "file.pml"` loads tags from another ProtoML file.
+
+Example:
+
+```plaintext
+@tags_import "_tags.pml"
+```
+
+Example shared tag file:
+
+```plaintext
+@tags
+=0:Important
+=1:Normal
+=2:Minor
+```
+
+Rules:
+
+- imported tags are merged into the current document
+- local tags override imported tags with the same ID
+- imported tags can be used in `@tasks` via `@tag=id`
+
+### Tag source analysis
+
+Shared tag files can also define `@tag_sources` for cross-file statistics.
+
+Example:
+
+```plaintext
+@title "Shared Project Tags"
+
+@tags
+=important:Critical, high priority
+=1:Normal
+
+@tag_sources
+- "meetings/week1.pml"
+- "meetings/week2.pml"
+```
+
+Rules:
+
+- `@tag_sources` is intended for imported tag files such as `_tags.pml`
+- `@tag_sources` is ignored during normal document rendering
+- `@title "..."` is only relevant for tag analysis output
+- without `@title`, the report title falls back to the tag file name
+
+### Content imports
+
+`@import name "file" type` registers a file for later output inside `@meeting`.
+
+Examples:
+
+```plaintext
+@import legal "snippet.html" html
+@import appendix "appendix.pml" pml
+```
+
+Use them inside `@meeting`:
+
+```plaintext
+@@import=legal
+@@output=appendix
+```
+
+Supported content import types:
+
+- `html`: inserts the file contents directly
+- `pml`: parses the file and inserts its resolved `@meeting` block
+
+For `pml` imports:
+
+- `meta`, `participants`, `subjects`, `tags`, `macros`, and `imports` are merged into the main AST
+- the imported `@meeting` content is inserted where `@@import=...` or `@@output=...` appears
+
+## Macros
+
+Macros are external ProtoML files with a `=name:` and `=template:` section.
+
+Register a macro:
+
+```plaintext
+@macro myMacro "macros/myMacro.pml"
+```
+
+Use it inside `@meeting`:
+
+```plaintext
+@@macro=myMacro:title=Alert;text=Something happened
+```
+
+Example macro file:
 
 ```plaintext
 @new_macro
 =name:myMacro
 =template:
-<div class="warn-box><strong>{{title}}</strong><br />{{text}}</div>
-
+<div class="warn-box"><strong>{{title}}</strong><br>{{text}}</div>
 ```
 
-## Upcoming features (release v1.1.0)
+Builtin macros can be referenced with `{{macro_dir}}`.
 
-- `pdf` render support
-- Full implementation of the `@tag`/`@tags_import` command
-- Fixing not being able to assign subjects to tasks
-- Simple SDK for stable support
-- Shipped macros
-- Adding dynamic macros (with JS support)
-
-
-## Parser logic (simplified)
-
-- `@` starts a block
-- `@@` is used inside `@meeting` for inline substitution/macros
-- `=` declares an ID (`=pt1`) that can be referenced later
-- `@tags_import` includes external tag file
-- Markdown-style headers can be used in `@meeting` content
-- Styling uses `-i -i-` for italic, `-b -b-` for bold and `-a=url -a-` for links, similarly to the Tags in HTML
-
-## Output Format (Example: JSON)
-
-The JSON format represents the actual AST (Abstract Syntax Tree) used by the renders, which may help you when experiencing issues.
-
-```json
-{
-  "date": "2025-05-21",
-  "participants": [
-    {
-      "name": "John Doe",
-      "alias": "jdoe",
-      "email": "jdoe@example.com",
-      "id": "pt1"
-    },
-    {
-      "name": "Jane Doe",
-      "id": "pt2"
-    }
-  ],
-  "subjects": {
-    "0": "Project Status: TimeTrack",
-    "1": "Security: TLS Check"
-  },
-  "tasks": [
-    {
-      "done": false,
-      "text": "Renew SSL certificate",
-      "assigned_to": "pt1",
-      "subject": "1",
-      "tag": {
-        "id": "important",
-        "label": "Critical, high priority"
-      }
-    }
-  ],
-  "notes": [
-    "PDF export works <b>very well</b>"
-  ]
-}
-```
-
-## protoparser (protoml-parser)
-
-`protoparser` is the command-line tool for parsing `.pml` files (ProtoML) and converting them into structured formats such as JSON, HTML, PDF and more.
-**The parser currently only support HTML rendering.** The other formats are planned for future releases.
-
-### protoviewer (protoml-viewer)
-
-`protoviewer` is a simple Electron app that allows you to view rendered `.pml` files without the need of third-party tools, like a web browser.
-The viewer only support HTML rendering, since it's nature of being a electron app.
-
-You can use it this way: `protoviewer [filename] [theme]`
-
-## Basic web parser
-
-The web parser allows you to directly write and simply parse ProtoML code in your browser. It does not fully support all features of the parser.
-Additionally, CSS is not supported within the web parser.
-
-To start using the web parser, simply open the `web/index.html`
-To rebuild the parser bundle, run `npm run build:web` in the root directory of the project.
-To run a webserver directly use `npm run dev` which starts a `serve` command on port 3000.
-
-### Basic Usage
-
-```bash
-protoparser [options] [filename] [format]
-```
-
-#### Example
-
-```bash
-protoparser -vvv -output=myfile MeetingYesterday.pml html
-```
-
-### Output
+Example:
 
 ```plaintext
-[INFO] Parsing file: MeetingYesterday.pml
-[DEBUG] Format selected: html
-[DEBUG] Filename: MeetingYesterday.html
-[DEBUG] Filename overwrite: myfile.html
-[DEBUG] Participants: @pt1: John Doe,jdoe,jdoe@example.com
-[DEBUG] Participants: @pt2: Jane Doe
-[DEBUG] IMPORTING TAGS
-[DEBUG] Importing tags from: tags.pml
-[DEBUG] Date: 21.05.2025
-...
-[INFO] DONE
-[INFO] Output written to: myfile.html
+@macro image "{{macro_dir}}/image.pml"
 ```
 
-### Available Options
+Notes:
+
+- macros are primarily intended for HTML rendering
+- macro templates may contain HTML and JavaScript
+- JavaScript is not sanitized, so untrusted macro files should not be used
+
+## Tags
+
+Tags define reusable task categories. They can be declared locally with `@tags` or shared across documents with `@tags_import`.
+
+Typical uses:
+
+- priority labels such as `important`, `normal`, `minor`
+- workflow labels such as `blocked`, `review`, `followup`
+- domain labels such as `frontend`, `backend`, `ops`
+
+In normal document rendering:
+
+- tasks can reference tags via `@tag=id`
+- the HTML renderer computes per-tag statistics and renders a `Tags` section
+- tasks receive tag-based CSS classes such as `task-tag-important`
+
+Computed statistics include:
+
+- `total`
+- `open`
+- `done`
+
+Example:
+
+```plaintext
+@tags
+=important:Critical, high priority
+
+@tasks
+-[ ] Prepare release notes @tag=important
+```
+
+### Cross-file tag statistics
+
+Shared tag files can also act as analysis entry points across multiple meeting files.
+
+CLI command:
+
+```bash
+protoparser tags _tags.pml statistics
+```
+
+Available analysis formats:
+
+- `statistics`
+- `json`
+- `html`
+- `pdf`
+
+Examples:
+
+```bash
+protoparser tags _tags.pml statistics
+protoparser tags _tags.pml json
+protoparser tags _tags.pml html
+protoparser tags _tags.pml pdf
+```
+
+The tag analysis command:
+
+- reads the tag file
+- evaluates its `@tag_sources`
+- parses the referenced meeting files
+- groups the result by tag file, source file, and matching tasks
+- resolves tag IDs against the effective tag set of the analyzed tag file, including nested `@tags_import` files
+- keeps local source tag overrides visible in task entries when a source document redefines an imported tag ID
+
+Each matching task can include:
+
+- task text
+- tag ID and label
+- open or done state
+- assigned participant
+- subject
+
+If the tag file defines `@title`, that title is used in text, JSON, HTML, and PDF tag reports.
+
+## Feature Suite
+
+The repository includes a complete demo and test set in `examples/feature-suite/`.
+
+Included files:
+
+- 2 shared tag files
+- 2 `.pml` files
+- 1 imported `.html` file
+
+The suite exercises:
+
+- local tags
+- shared tags
+- nested `@tags_import`
+- local tag overrides
+- `@import ... html`
+- `@import ... pml`
+- macros
+- inline references
+- tag statistics
+
+Recommended test commands:
+
+```bash
+protoparser examples/feature-suite/main_demo.pml html
+protoparser tags examples/feature-suite/_workflow_tags.pml statistics
+protoparser analyze examples/feature-suite/main_demo.pml statistics
+```
+
+Because the shared tag files reference each other through imports, the statistics command can also be run against the other tag file in the same folder.
+
+## CLI
+
+Basic usage:
+
+```bash
+protoparser [options] <filename> <format>
+protoparser [options] <filename> <format> <output_dir>
+protoparser tags <tags_file> <format>
+```
+
+Common examples:
+
+```bash
+protoparser test.pml html
+protoparser test.pml html ./html
+protoparser test.pml json
+protoparser -output=notes test.pml pdf
+protoparser tags _tags.pml statistics
+protoparser tags _tags.pml html
+protoparser analyze test.pml statistics
+protoparser analyze test.pml html
+protoparser --listMacros {{macro_dir}}
+protoparser --macroHelp {{macro_dir}}/finance/f_entry.pml
+protoparser --listMacrosJson {{macro_dir}}
+protoparser --listDocs
+protoparser --docs meeting
+```
+
+### Output behavior
+
+`-output=<filename>` sets the output base name explicitly.
+
+The third positional argument can be used as an output directory:
+
+```bash
+protoparser test.pml html ./html
+```
+
+This writes `html/test.html`.
+
+If a document uses `@import ... html` or `@import ... pml` and no explicit output path is given, the renderer automatically writes into a format subdirectory such as `html/test.html` to avoid cluttering the source directory.
+
+### PML analysis
+
+General cross-reference analysis for `.pml` files is available via:
+
+```bash
+protoparser analyze <pml_file> statistics
+protoparser analyze <pml_file> json
+protoparser analyze <pml_file> html
+protoparser analyze <pml_file> pdf
+```
+
+The analysis includes:
+
+- local document stats
+- resolved document stats after imports and tag merging
+- content imports for `.pml` and `.html`
+- nested `@tags_import` references
+- registered macros
+- recursive reference trees across imported `.pml` files
+
+### CLI options
 
 | Flag | Description |
 | ---- | ----------- |
-| `-v`, `-vv`, `-vvv` | Verbosity levels: info, debug, trace |
-| `-output=FILENAME` | Define custom output file (without extension) |
-| `-strict` | Enable strict parsing (fail on missing refs) |
-| `-theme=name` | Set export theme (used in HTML/PDF) |
-| `-config=PATH` | Use external config for rendering/export |
+| `-v`, `-vv`, `-vvv` | Set verbosity level |
+| `-output=<filename>` | Set output base name without extension |
+| `-theme=<name>` | Set HTML or PDF theme |
+| `-strict` | Fail on unresolved references or missing imports |
 | `--help` | Show CLI help |
-| `--listMacros <dir>` | List all macros in the specified path or builtin macros |
-| `--macroHelp <file_path>` | Show help for a specific macro file |
-| `--listDocs` | List all available documentation files |
-| `--docs <name>` | Show documentation for a specific command or topic |
+| `--version` | Show version and build number |
+| `--listMacros <dir>` | List macros in a directory |
+| `--macroHelp <file>` | Show docs for a macro file |
+| `--listMacrosJson <dir>` | Output macro metadata as JSON |
+| `--listDocs` | List bundled documentation topics |
+| `--docs <name>` | Show a documentation topic from `docs/` |
 
-### Local development
+### Macro path placeholder
 
-- Clone the repository
-- Make your changes
-- Run `npm run build:exe` to build linux and windows executables or simply run `npm uninstall -g protoparser && npm install -g .` to install your local version globally.
+The CLI and macro loader support `{{macro_dir}}` for the built-in macro directory.
 
-### Supported formats
+Examples:
+
+```bash
+protoparser --listMacros {{macro_dir}}
+protoparser --macroHelp {{macro_dir}}/finance/f_entry.pml
+```
+
+```plaintext
+@macro image "{{macro_dir}}/image.pml"
+```
+
+## Output Formats
+
+Supported render formats:
 
 - `json`
 - `html`
 - `pdf`
 
-### Notes
+Notes:
 
-- If no format is given, defaults to HTML
-- If no output is given, the filename (without extension) is used
-- Error and warnings are printed based on verbosity levels.
+- if no format is passed, the CLI currently defaults to `json`
+- if no explicit output name is passed, the input filename without extension is used
+- the `json` renderer outputs the current AST
 
-## What ProtoML is NOT (yet?)
+Common AST fields:
 
-- It it not a programming language
-- It does not include logic, loops or real variables
-- It is not intended to render HTML or provide full Markdown support
+- `meta`
+- `participants`
+- `subjects`
+- `tags`
+- `tasks`
+- `notes`
+- `meeting`
+- `tag_stats`
 
-## What ProtoML IS
+## Viewer and Web Parser
 
-- A semantic markup for protocols, tasks, topics and notes
-- Extremely easy to read and write
-- Expandable via IDs and modular includes
-- Perfectly suited for Electron apps, PDF generators and structured JSON storage
+### protoviewer
+
+`protoviewer` opens a rendered ProtoML document in the bundled Electron viewer.
+
+```bash
+protoviewer test.pml
+protoviewer test.pml dark
+```
+
+### Web parser
+
+The browser demo lives in `web/`.
+
+Open:
+
+```plaintext
+web/index.html
+```
+
+Build the browser bundle:
+
+```bash
+npm run build:web
+```
+
+Start a local development server:
+
+```bash
+npm run dev
+```
+
+## Development
+
+```bash
+git clone https://github.com/ente/protoml-parser.git
+cd protoml-parser
+npm install
+```
+
+Useful commands:
+
+```bash
+npm run build:web
+npm run dev
+npm run build:exe
+```
+
+To use the local version globally:
+
+```bash
+npm uninstall -g protoml-parser
+npm install -g .
+```
+
+## Scope
+
+ProtoML is not:
+
+- a programming language
+- a general-purpose template engine
+- full Markdown
+- a runtime with loops or arbitrary execution
+
+ProtoML is:
+
+- a readable format for structured meeting documents
+- a lightweight task and note format with references
+- a modular document format with imports and macros
+- a good fit for HTML views, viewers, and structured export pipelines
