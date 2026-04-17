@@ -1,6 +1,17 @@
 const fs = require("fs");
 const path = require("path");
 
+function resolveMacroPath(inputPath, macroBase) {
+  if (!inputPath) return inputPath;
+
+  if (inputPath.includes("{{macro_dir}}")) {
+    const suffix = inputPath.split("{{macro_dir}}")[1] || "";
+    return path.resolve(macroBase, suffix.replace(/^[/\\]?/, ""));
+  }
+
+  return inputPath;
+}
+
 function extractSection(raw, sectionName) {
   const escapedSectionName = sectionName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const headerMatch = new RegExp(`^=${escapedSectionName}:`, "m").exec(raw);
@@ -23,6 +34,7 @@ function parseArgs(argv = process.argv.slice(2)) {
     filename: null,
     format: null,
     output: null,
+    outputExplicitlySet: false,
     verbosity: 0,
     strict: false,
     theme: null,
@@ -33,6 +45,32 @@ function parseArgs(argv = process.argv.slice(2)) {
   const positional = [];
   const macroBase = path.resolve(__dirname, "..", "..", "macros");
 
+  if (argv[0] === "tags") {
+    options.command = "tags";
+    options.path = argv[1] ? path.resolve(process.cwd(), argv[1]) : null;
+    options.format = argv[2] || "statistics";
+    options.output = options.path
+      ? path.join(
+          path.dirname(options.path),
+          `${path.basename(options.path, path.extname(options.path))}-tags-report`
+        )
+      : null;
+    return options;
+  }
+
+  if (argv[0] === "analyze") {
+    options.command = "analyze";
+    options.path = argv[1] ? path.resolve(process.cwd(), argv[1]) : null;
+    options.format = argv[2] || "statistics";
+    options.output = options.path
+      ? path.join(
+          path.dirname(options.path),
+          `${path.basename(options.path, path.extname(options.path))}-analysis-report`
+        )
+      : null;
+    return options;
+  }
+
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
 
@@ -40,6 +78,7 @@ function parseArgs(argv = process.argv.slice(2)) {
       options.verbosity = arg.length - 1;
     } else if (arg.startsWith("-output=")) {
       options.output = arg.split("=")[1];
+      options.outputExplicitlySet = true;
     } else if (arg.startsWith("-theme=")) {
       options.theme = arg.split("=")[1];
     } else if (arg === "-strict") {
@@ -59,12 +98,7 @@ function parseArgs(argv = process.argv.slice(2)) {
         console.error("[X] No path provided for --listMacros");
         process.exit(1);
       }
-      const resolvedPath = next.includes("{{macro_dir}}")
-        ? path.join(
-            macroBase,
-            next.split("{{macro_dir}}")[1]?.replace(/^\/?/, "")
-          )
-        : next;
+      const resolvedPath = resolveMacroPath(next, macroBase);
       const finalPath = path.resolve(process.cwd(), resolvedPath || macroBase);
 
       if (!fs.existsSync(finalPath)) {
@@ -111,12 +145,7 @@ function parseArgs(argv = process.argv.slice(2)) {
         console.error("[X] No path provided for --macroHelp");
         process.exit(1);
       }
-      const resolvedPath = next.includes("{{macro_dir}}")
-        ? path.join(
-            macroBase,
-            next.split("{{macro_dir}}")[1]?.replace(/^\/?/, "")
-          )
-        : next;
+      const resolvedPath = resolveMacroPath(next, macroBase);
       const finalPath = path.resolve(process.cwd(), resolvedPath);
 
       if (!fs.existsSync(finalPath)) {
@@ -136,12 +165,7 @@ function parseArgs(argv = process.argv.slice(2)) {
         console.error("[X] No path provided for --listMacrosJson");
         process.exit(1);
       }
-      const resolvedPath = next.includes("{{macro_dir}}")
-        ? path.join(
-            macroBase,
-            next.split("{{macro_dir}}")[1]?.replace(/^\/?/, "")
-          )
-        : next;
+      const resolvedPath = resolveMacroPath(next, macroBase);
       const finalPath = path.resolve(process.cwd(), resolvedPath || macroBase);
 
       if (!fs.existsSync(finalPath)) {
@@ -232,12 +256,7 @@ function parseArgs(argv = process.argv.slice(2)) {
 
       process.exit(0);
     } else {
-      const resolvedArg = arg.includes("{{macro_dir}}")
-        ? path.join(
-            macroBase,
-            arg.split("{{macro_dir}}")[1]?.replace(/^\/?/, "")
-          )
-        : arg;
+      const resolvedArg = resolveMacroPath(arg, macroBase);
       positional.push(resolvedArg);
     }
   }
@@ -245,6 +264,10 @@ function parseArgs(argv = process.argv.slice(2)) {
   if (!options.command) {
     if (positional.length >= 1) options.filename = positional[0];
     if (positional.length >= 2) options.format = positional[1];
+    if (positional.length >= 3) {
+      options.output = resolveOutputTarget(positional[2], options.filename);
+      options.outputExplicitlySet = true;
+    }
 
     if (!options.filename || options.filename.startsWith("-")) {
       console.error("[X] No valid input file provided.");
@@ -264,6 +287,21 @@ function parseArgs(argv = process.argv.slice(2)) {
   return options;
 }
 
+function resolveOutputTarget(target, inputFile) {
+  const resolvedTarget = path.resolve(process.cwd(), target);
+  const sourceBaseName = path.basename(inputFile, path.extname(inputFile));
+  const looksLikeDirectory =
+    /[\\/]$/.test(target) ||
+    (fs.existsSync(resolvedTarget) && fs.statSync(resolvedTarget).isDirectory()) ||
+    path.extname(target) === "";
+
+  if (looksLikeDirectory) {
+    return path.join(resolvedTarget, sourceBaseName);
+  }
+
+  return resolvedTarget.replace(/\.[^/.]+$/, "");
+}
+
 function printHelp() {
   console.log(`
 
@@ -274,6 +312,9 @@ Alias: protoparser, protoml-parser
 Alias Protoviewer: protoviewer, protoml-viewer
 Usage:
   protoparser [options] <filename> <format>
+  protoparser [options] <filename> <format> <output_dir>
+  protoparser tags <tags_file> statistics
+  protoparser analyze <pml_file> statistics
   protoparser --listMacros <macro_dir>
   protoparser --macroHelp <macro_file>
   protoparser --listMacrosJson <macro_dir>
@@ -286,9 +327,9 @@ Options:
   -output=<filename>      Set output base name (without extension)
   -theme=<name>           Apply export theme (HTML/PDF only)
   -strict                 Enable strict parsing
-  --listMacros <dir>      List available macros (e.g. {{macro_dir}})
-  --macroHelp <file>      Show macro help from file
-  --listMacrosJson <dir>  Output all macros as JSON array (with docs/template)
+  --listMacros "<dir>"      List available macros (e.g. {{macro_dir}})
+  --macroHelp "<file>"      Show macro help from file
+  --listMacrosJson "<dir>"  Output all macros as JSON array (with docs/template)
   --listDocs              List all available help modules from /docs
   --docs <file>           Show help module from /docs folder (e.g. meeting, protoml-parse)
   --help                  Show this help
@@ -296,6 +337,9 @@ Options:
 
 Examples:
   protoparser Meeting.pml html
+  protoparser Meeting.pml html ./html
+  protoparser tags _tags.pml statistics
+  protoparser analyze Meeting.pml statistics
   protoparser -vv -output=notes Meeting.pml json
   protoparser --listMacros ./macros
   protoparser --macroHelp ./macros/finance/f_entry.pml
@@ -315,4 +359,4 @@ function printBuildVersion(buildVersion) {
   console.log(`Build version: ${buildVersion}`);
 }
 
-module.exports = {parseArgs};
+module.exports = {parseArgs, resolveMacroPath};

@@ -53,12 +53,48 @@ section {
   border-radius: 4px;
   font-size: 0.9em;
   margin-left: 0.5rem;
+  display: inline-block;
 }
 
 .meta {
   font-size: 0.85em;
   color: #666;
   margin-top: 0.2em;
+}
+
+.tag-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.tag-card {
+  border: 1px solid #ddd;
+  border-left: 4px solid #4a90e2;
+  border-radius: 8px;
+  padding: 0.9rem;
+  background: #fafafa;
+}
+
+.tag-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.tag-card-head code {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.tag-card-stats {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: #444;
 }
 
 button {

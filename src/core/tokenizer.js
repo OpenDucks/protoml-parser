@@ -19,15 +19,89 @@ function tokenize(text) {
     }
 
     if (raw.startsWith("@macro ")) {
-      const [, name, fileRaw] = raw.split(" ");
+      const match = raw.match(/^@macro\s+([^\s]+)\s+"(.+?)"$/);
+      if (!match) {
+        continue;
+      }
+      const [, name, fileRaw] = match;
       const projectRoot = path.resolve(__dirname, "../../");
       const macroDir = path.join(projectRoot, "macros");
-      const file = fileRaw
-        .replace(/\"/g, "")
-        .replace("{{macro_dir}}", macroDir);
+      const file = fileRaw.replace("{{macro_dir}}", macroDir);
 
       tokens.push({type: "macro", name, file, raw, line});
       continue;
+    }
+
+    if (raw.startsWith("@import ")) {
+      const match = raw.match(/^@import\s+([^\s]+)\s+"(.+?)"(?:\s+([^\s]+))?$/);
+      if (match) {
+        const [, name, file, format] = match;
+        tokens.push({
+          type: "import",
+          name,
+          file,
+          format: (format || "text").toLowerCase(),
+          raw,
+          line,
+        });
+        continue;
+      }
+    }
+
+    if (raw.startsWith("@tags_import ")) {
+      const match = raw.match(/^@tags_import\s+"(.+?)"$/);
+      if (match) {
+        tokens.push({
+          type: "tagsImport",
+          file: match[1],
+          raw,
+          line,
+        });
+        continue;
+      }
+    }
+
+    if (raw.startsWith("@protocol ")) {
+      const match = raw.match(/^@protocol\s+"(.+?)"$/);
+      if (match) {
+        tokens.push({
+          type: "directive",
+          name: "protocol",
+          value: match[1],
+          raw,
+          line,
+        });
+        continue;
+      }
+    }
+
+    if (raw.startsWith("@title ")) {
+      const match = raw.match(/^@title\s+"(.+?)"$/);
+      if (match) {
+        tokens.push({
+          type: "directive",
+          name: "title",
+          value: match[1],
+          raw,
+          line,
+        });
+        continue;
+      }
+    }
+
+    if (raw.startsWith("@meeting ")) {
+      const match = raw.match(/^@meeting\s+"(.+?)"$/);
+      if (match) {
+        tokens.push({
+          type: "directive",
+          name: "meeting_title",
+          value: match[1],
+          raw,
+          line,
+        });
+        tokens.push({type: "command", raw: "@meeting", value: "meeting", line});
+        continue;
+      }
     }
 
     // Command block e.g. @participants
