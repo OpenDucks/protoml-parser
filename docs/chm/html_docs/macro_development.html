@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Macro Development - ProtoML 1.3.1+build37</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.3.1+build37</span>
+  </nav>
+  <main class="page">
+    
+      <h1>Macro Development</h1>
+      <p>A macro file is a ProtoML file with a declared name and template body.</p>
+      <pre><code>@new_macro
+=name:warningBox
+=template:
+&lt;div class="warn-box"&gt;&lt;strong&gt;{{title}}&lt;/strong&gt;&lt;br&gt;{{text}}&lt;/div&gt;
+=docs:
+Shows a warning box with a title and a text body.</code></pre>
+      <h2>Usage</h2>
+      <pre><code>@macro warningBox "macros/warning-box.pml"
+@@macro=warningBox:title=Alert;text=Something happened</code></pre>
+      <p>Macro templates can contain HTML and JavaScript. They are mainly intended for HTML and PDF rendering.</p>
+    
+  </main>
+</body>
+</html>

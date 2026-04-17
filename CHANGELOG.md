@@ -1,5 +1,32 @@
 # CHANGELOG.md
 
+## v1.3.1
+
+- Added `markdown` and `text` renderers for readability-focused exports of `.pml` documents.
+- Added built-in docs entries for `markdown` and `text`.
+- Improved Markdown and text rendering so meeting content keeps headings, links, TOCs, and readable macro output while stripping embedded CSS and JavaScript.
+- Changed the default output extensions for `markdown` to `.md` and `text` to `.txt`.
+- Added built-in meta keys `@status`, `@record_id`, `@confidentiality`, `@effective_date`, `@valid_until`, and `@review_date`.
+- Extended local imported `.pml` meta preservation for fixed meta keys referenced via `@@ref=meta:...`.
+- Added validation warnings for duplicate meta keys and for ambiguous use of built-in meta keys through `@meta=...`.
+- Fixed field inconsistencies between `@signatures` / `@approvals` parsing and Markdown/Text rendering.
+- Added `protoparser register <dir> statistics|json|html|pdf` as a governance-style document register with status summary, missing metadata checks, review/expiry hints, and open-task visibility across document directories.
+- Added `protoparser bundle <pml_file>` to write a bundled, import-expanded `.pml` archive file.
+- Added built-in docs entries for `register` and `bundle`.
+- Finished the native Windows HTML Help setup in `docs/chm/`, including generated topic pages, TOC, index, project file, and working CHM compilation via `npm run build:chm`.
+- Added `protoparser analyze <pml_file> graph` for Mermaid-style import and tag-import graphs.
+- Added support for saving `protoparser analyze <pml_file> graph` output directly as a `.mmd` file via `-output=...`.
+- Improved the graph output styling and labels for better readability.
+- Added `@author`, `@version`, and flexible `@meta=key:value` metadata support.
+- Added `@@ref=...` for structured references such as metadata, participant fields, signatures, and approvals.
+- Added `@@toc` for automatic table of contents generation inside the `@meeting` block.
+- Added `@signatures` with `@@signature=id` and `@approvals` with `@@approval=id`.
+- Added `@references` and `@attachments` blocks for linked supporting context in rendered output.
+- Added `protoparser validate <pml_file>` and `protoparser tags <tags_file> validate` for basic document and shared tag validation.
+- Added `protoparser macros <pml_file>` to inspect registered and used macros across imported `.pml` files.
+- Added `protoparser scaffold meeting [target_dir]` and `protoparser init [target_dir]` for bootstrapping starter ProtoML files and project structures.
+- Added missing built-in docs entries for newer commands and syntax such as `protocol`, `title`, `import`, `output`, `tag_sources`, `analyze`, `validate`, `macros`, `scaffold`, `init`, `macro_dir`, and `graph`.
+
 ## v1.3.0
 
 - Added support for `@title "..."` in shared `@tags_import` files so tag statistics outputs (`statistics`, `json`, `html`, `pdf`) can use a custom report title instead of the file path.

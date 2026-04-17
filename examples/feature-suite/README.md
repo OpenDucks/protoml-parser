@@ -26,12 +26,19 @@ These two commands are enough to test the complete setup:
 
 What this set covers:
 
+- `@author`
+- `@version`
+- `@meta=key:value`
 - `@protocol`
 - `@meeting`
 - `@participants`
 - `@subjects`
 - `@tasks`
 - `@notes`
+- `@signatures`
+- `@approvals`
+- `@references`
+- `@attachments`
 - `@tags`
 - `@tags_import`
 - `@tag_sources`
@@ -41,6 +48,10 @@ What this set covers:
 - `@import ... html`
 - `@import ... pml`
 - `@@import` and `@@output`
+- `@@ref`
+- `@@toc`
+- `@@signature`
+- `@@approval`
 - macro registration and usage
 - inline references with `@@e=...`
 - inline formatting

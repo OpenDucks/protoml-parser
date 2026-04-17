@@ -142,10 +142,10 @@ function formatTask(task) {
   return parts.join(" | ");
 }
 
-function formatTagStatistics(report, indent = "") {
+function formatTagStatistics(report, indent = "", verbosity = 0) {
   const lines = [];
   lines.push(`${indent}Tag file: ${report.title}`);
-  if (report.title !== report.path) {
+  if (verbosity >= 1 || report.title !== report.path) {
     lines.push(`${indent}Path: ${report.path}`);
   }
 
@@ -154,9 +154,12 @@ function formatTagStatistics(report, indent = "") {
     lines.push(`${indent}Tags:`);
     for (const id of tagIds) {
       const stat = report.tag_stats[id];
-      lines.push(
-        `${indent}- ${id}: ${report.tags[id]} (total=${stat.total}, open=${stat.open}, done=${stat.done})`
-      );
+      const baseLine = `${indent}- ${id}: ${report.tags[id]} (total=${stat.total}, open=${stat.open}, done=${stat.done})`;
+      if (verbosity >= 2 && report.local_tags?.[id] && report.local_tags[id] === report.tags[id]) {
+        lines.push(`${baseLine} [local]`);
+      } else {
+        lines.push(baseLine);
+      }
     }
   }
 
@@ -164,20 +167,27 @@ function formatTagStatistics(report, indent = "") {
     lines.push(`${indent}Sources:`);
     for (const source of report.tag_sources) {
       lines.push(`${indent}- ${source.path}`);
-      if (source.tasks.length) {
+      if (verbosity >= 1 && source.tasks.length) {
         for (const task of source.tasks) {
           lines.push(`${indent}  ${formatTask(task)}`);
         }
-      } else {
+      } else if (verbosity >= 1) {
         lines.push(`${indent}  (no matching tasks)`);
       }
     }
   }
 
-  if (report.imported.length) {
+  if (verbosity >= 2 && report.imported.length) {
     lines.push(`${indent}Imported tag files:`);
     for (const child of report.imported) {
-      lines.push(formatTagStatistics(child, `${indent}  `));
+      lines.push(formatTagStatistics(child, `${indent}  `, verbosity));
+    }
+  }
+
+  if (verbosity >= 3 && Object.keys(report.local_tags || {}).length) {
+    lines.push(`${indent}Local tags:`);
+    for (const [id, label] of Object.entries(report.local_tags)) {
+      lines.push(`${indent}- ${id}: ${label}`);
     }
   }
 

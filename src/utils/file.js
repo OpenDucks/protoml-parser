@@ -1,9 +1,24 @@
 const fs = require("fs")
 const path = require("path")
 
-function saveToFile(filename, content, format) {
+function getExtensionForFormat(format) {
+  const normalized = String(format || "").toLowerCase()
+  const extensionMap = {
+    markdown: "md",
+    text: "txt",
+    graph: "mmd",
+  }
+
+  return extensionMap[normalized] || normalized
+}
+
+function getOutputFilename(filename, format) {
   const ext = path.extname(filename)
-  const safeFilename = ext ? filename : `${filename}.${format}`
+  return ext ? filename : `${filename}.${getExtensionForFormat(format)}`
+}
+
+function saveToFile(filename, content, format) {
+  const safeFilename = getOutputFilename(filename, format)
 
   try {
     fs.mkdirSync(path.dirname(safeFilename), { recursive: true })
@@ -14,4 +29,4 @@ function saveToFile(filename, content, format) {
   }
 }
 
-module.exports = { saveToFile }
+module.exports = { saveToFile, getOutputFilename, getExtensionForFormat }

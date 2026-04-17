@@ -5,6 +5,8 @@ Lists all available macro files in a given directory. The command recursively se
 
 Supports the `{{macro_dir}}` placeholder to reference internal macros.
 
+The directory path should generally be wrapped in double quotes, especially when using `{{macro_dir}}`.
+
 =examples:
-protoparser --listMacros {{macro_dir}}
-protoparser --listMacros ./macros
+protoparser --listMacros "{{macro_dir}}"
+protoparser --listMacros "./macros"

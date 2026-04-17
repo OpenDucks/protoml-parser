@@ -7,5 +7,7 @@ Each entry includes the macro's name, documentation, path, and template (if avai
 
 Useful for frontends, dashboards, or live editors.
 
+The directory path should generally be wrapped in double quotes, especially when using `{{macro_dir}}`.
+
 =examples:
-protoparser --listMacrosJson {{macro_dir}}
+protoparser --listMacrosJson "{{macro_dir}}"

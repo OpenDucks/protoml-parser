@@ -1,0 +1,59 @@
+body {
+  font-family: Segoe UI, Tahoma, sans-serif;
+  background: #ffffff;
+  color: #222222;
+  margin: 0;
+}
+
+.topnav {
+  background: #0f4c81;
+  color: #ffffff;
+  padding: 0.7rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topnav a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.version {
+  font-size: 0.92rem;
+  opacity: 0.95;
+}
+
+.page {
+  padding: 1.4rem 1.8rem 2rem;
+  max-width: 900px;
+}
+
+h1 {
+  font-size: 1.9rem;
+  border-bottom: 2px solid #d9d9d9;
+  padding-bottom: 0.4rem;
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin-top: 1.6rem;
+  color: #0f4c81;
+}
+
+pre {
+  background: #f3f6f9;
+  border: 1px solid #dbe3ea;
+  border-radius: 6px;
+  padding: 0.9rem;
+  overflow: auto;
+}
+
+code {
+  font-family: Consolas, "Courier New", monospace;
+}
+
+ul li {
+  margin-bottom: 0.35rem;
+}

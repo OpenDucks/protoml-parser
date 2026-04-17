@@ -14,7 +14,17 @@
 
 @protocol "Feature Suite - {{date}}"
 @date:18.04.2026
+@author:Alex Demo
+@version:2.0
+@status:review
+@record_id:FEATURE-DEMO-2026-01
+@confidentiality:internal
+@effective_date:18.04.2026
+@valid_until:31.12.2026
+@review_date:01.07.2026
 @location:Berlin Lab
+@meta=department:Platform Engineering
+@meta=doc_type:Demo Protocol
 
 @participants
 =pt1:Alex Demo,alex,alex@example.com
@@ -29,6 +39,19 @@
 =1:Import handling
 =2:Shared tag analysis
 
+@signatures
+=lead:Alex Demo,Project Lead,18.04.2026,Signed digitally
+
+@approvals
+=security:Security Review,approved,Sam Parser,18.04.2026,Reviewed in demo scope
+
+@references
+- ProtoML README|https://github.com/Ente/protoml-parser
+
+@attachments
+- Demo graph|main-demo-graph.mmd
+- Imported HTML snippet|snippet.html
+
 @tasks
 -[ ] Review import chain @ptp=pt1 =1 @tag=important
 -[x] Verify shared tags @ptp=pt2 =2 @tag=review
@@ -40,11 +63,19 @@
 - The local `important` tag overrides the imported label inside this document.
 
 @meeting "Feature Walkthrough"
+@@toc
 # Main Demo
 ## Participants
-@@e=pt1, @@e=pt2
+@@e=pt1 , @@e=pt2
 ## Topic
 @@e=0
+Author: @@ref=meta:author
+Version: @@ref=meta:version
+Date: @@ref=meta:date
+Status: @@ref=meta:status
+Record ID: @@ref=meta:record_id
+Confidentiality: @@ref=meta:confidentiality
+Owner email: @@ref=participants:pt1:email
 @@macro=badge:text=demo
 @@macro=warn_box:title=Watch imports carefully
 @@macro=quote:text=This file is meant to exercise multiple ProtoML features at once.;author=ProtoML demo
@@ -63,4 +94,6 @@
 
 ## Summary
 @@macro=meeting_summary:rating=5;notes=Feature suite completed successfully with imports, tags and macros.
+@@signature=lead
+@@approval=security
 @@macro=image:src=https://placehold.co/480x240

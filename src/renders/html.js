@@ -147,10 +147,48 @@ function renderHTML(ast, options = {}) {
     html.push(`</ul></section>`);
   }
 
+  const metaEntries = Object.entries(ast.meta || {}).filter(([key]) =>
+    !["protocol", "meeting_title", "title"].includes(key)
+  );
+
+  if (metaEntries.length) {
+    html.push(`<section><h2>Meta</h2><ul>`);
+    for (const [key, value] of metaEntries) {
+      html.push(`<li><b>${escape(key)}:</b> ${escape(value)}</li>`);
+    }
+    html.push(`</ul></section>`);
+  }
+
   if (ast.notes?.length) {
     html.push(`<section><h2>Notes</h2><ul>`);
     for (const note of ast.notes) {
       html.push(`<li>${note}</li>`);
+    }
+    html.push(`</ul></section>`);
+  }
+
+  if (ast.references?.length) {
+    html.push(`<section><h2>References</h2><ul>`);
+    for (const entry of ast.references) {
+      const match = String(entry).match(/^(.+?)\|(.+)$/);
+      if (match) {
+        html.push(`<li><a href="${escape(match[2].trim())}" target="_blank">${escape(match[1].trim())}</a></li>`);
+      } else {
+        html.push(`<li>${escape(entry)}</li>`);
+      }
+    }
+    html.push(`</ul></section>`);
+  }
+
+  if (ast.attachments?.length) {
+    html.push(`<section><h2>Attachments</h2><ul>`);
+    for (const entry of ast.attachments) {
+      const match = String(entry).match(/^(.+?)\|(.+)$/);
+      if (match) {
+        html.push(`<li><a href="${escape(match[2].trim())}" target="_blank">${escape(match[1].trim())}</a></li>`);
+      } else {
+        html.push(`<li>${escape(entry)}</li>`);
+      }
     }
     html.push(`</ul></section>`);
   }

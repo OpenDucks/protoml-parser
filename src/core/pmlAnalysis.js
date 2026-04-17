@@ -99,6 +99,15 @@ function loadPmlAnalysisTree(filename, ancestors = new Set()) {
   const baseDir = path.dirname(fullPath);
   const nextAncestors = new Set(ancestors);
   nextAncestors.add(fullPath);
+  const isSharedTagFile =
+    Boolean(localAst.tags && Object.keys(localAst.tags).length) &&
+    !countKeys(localAst.participants) &&
+    !countKeys(localAst.subjects) &&
+    !countKeys(localAst.macros) &&
+    !countKeys(localAst.imports) &&
+    !countItems(localAst.tasks) &&
+    !countItems(localAst.notes) &&
+    !countItems(localAst.meeting);
 
   const tagImports = (Array.isArray(localAst.tags_import) ? localAst.tags_import : [])
     .map((ref) => {
@@ -137,6 +146,7 @@ function loadPmlAnalysisTree(filename, ancestors = new Set()) {
   return {
     path: fullPath,
     title: getDisplayName(fullPath, localAst, resolvedAst),
+    kind: isSharedTagFile ? "tags" : "pml",
     cycle: false,
     meta: resolvedAst.meta || {},
     local_stats: getLocalStats(localAst),
@@ -171,7 +181,7 @@ function formatStats(stats, indent = "") {
   ].join(", ");
 }
 
-function formatPmlAnalysis(report, indent = "") {
+function formatPmlAnalysis(report, indent = "", verbosity = 0) {
   if (report.cycle) {
     return `${indent}PML file: ${report.title}\n${indent}Path: ${report.path}\n${indent}(cycle detected)`;
   }
@@ -182,7 +192,7 @@ function formatPmlAnalysis(report, indent = "") {
   lines.push(`${indent}Local stats: ${formatStats(report.local_stats)}`);
   lines.push(`${indent}Resolved stats: ${formatStats(report.resolved_stats)}`);
 
-  if (report.macros.length) {
+  if (verbosity >= 1 && report.macros.length) {
     lines.push(`${indent}Macros:`);
     for (const macro of report.macros) {
       lines.push(`${indent}- ${macro.name}: ${macro.file}`);
@@ -194,11 +204,15 @@ function formatPmlAnalysis(report, indent = "") {
     for (const entry of report.content_imports) {
       if (entry.format === "pml" && entry.analysis) {
         lines.push(`${indent}- ${entry.name} (${entry.format}) -> ${entry.path}`);
-        lines.push(formatPmlAnalysis(entry.analysis, `${indent}  `));
-      } else {
+        if (verbosity >= 2) {
+          lines.push(formatPmlAnalysis(entry.analysis, `${indent}  `, verbosity));
+        }
+      } else if (verbosity >= 1) {
         lines.push(
           `${indent}- ${entry.name} (${entry.format}) -> ${entry.path} (lines=${entry.stats.lines}, bytes=${entry.stats.bytes})`
         );
+      } else {
+        lines.push(`${indent}- ${entry.name} (${entry.format}) -> ${entry.path}`);
       }
     }
   }
@@ -206,7 +220,18 @@ function formatPmlAnalysis(report, indent = "") {
   if (report.tag_imports.length) {
     lines.push(`${indent}Tag imports:`);
     for (const child of report.tag_imports) {
-      lines.push(formatPmlAnalysis(child, `${indent}  `));
+      if (verbosity >= 2) {
+        lines.push(formatPmlAnalysis(child, `${indent}  `, verbosity));
+      } else {
+        lines.push(`${indent}  ${child.title}`);
+      }
+    }
+  }
+
+  if (verbosity >= 3 && Object.keys(report.meta || {}).length) {
+    lines.push(`${indent}Resolved meta:`);
+    for (const [key, value] of Object.entries(report.meta)) {
+      lines.push(`${indent}- ${key}: ${value}`);
     }
   }
 
@@ -333,10 +358,113 @@ function renderPmlAnalysisPDF(report) {
   return result;
 }
 
+function renderPmlAnalysisGraph(report, options = {}) {
+  const direction = ["TD", "LR", "RL", "BT"].includes(String(options.graphDirection || "").toUpperCase())
+    ? String(options.graphDirection).toUpperCase()
+    : "TD";
+  const graphView = String(options.graphView || "compact").toLowerCase();
+  const lines = [`graph ${direction}`];
+  const seen = new Set();
+  const ids = new Map();
+  let counter = 0;
+
+  function sanitizeLabel(text) {
+    return String(text).replace(/"/g, '\\"');
+  }
+
+  function shortFileName(filePath) {
+    return path.basename(String(filePath || ""));
+  }
+
+  function nodeLabel(node) {
+    if (!node) return "Unknown";
+
+    const fileName = shortFileName(node.path);
+    if (node.kind === "tags") {
+      return `${fileName}\\n${node.title}`;
+    }
+
+    if (node.title && node.title !== fileName) {
+      return `${fileName}\\n${node.title}`;
+    }
+
+    return fileName;
+  }
+
+  function pushNode(nodeId, label, kind, isRoot = false) {
+    lines.push(`${nodeId}["${sanitizeLabel(label)}"]`);
+    if (isRoot) {
+      lines.push(`class ${nodeId} graphRoot;`);
+    } else if (kind === "tags") {
+      lines.push(`class ${nodeId} graphTags;`);
+    } else if (kind === "html") {
+      lines.push(`class ${nodeId} graphHtml;`);
+    } else {
+      lines.push(`class ${nodeId} graphPml;`);
+    }
+  }
+
+  function visit(node, isRoot = false) {
+    if (!node) return;
+    if (!ids.has(node.path)) {
+      counter += 1;
+      ids.set(node.path, `n${counter}`);
+    }
+
+    const nodeId = ids.get(node.path);
+    if (seen.has(node.path)) {
+      return nodeId;
+    }
+    seen.add(node.path);
+    pushNode(nodeId, nodeLabel(node), node.kind, isRoot);
+
+    if (graphView === "compact" || graphView === "full" || graphView === "imports") {
+      for (const entry of node.content_imports || []) {
+        if (entry.format === "pml" && entry.analysis && !entry.analysis.cycle) {
+          const childId = visit(entry.analysis);
+          lines.push(`${nodeId} -->|import\\n${sanitizeLabel(entry.name)}| ${childId}`);
+        } else if (graphView === "full") {
+          const htmlNodeKey = `${node.path}::${entry.name}`;
+          if (!ids.has(htmlNodeKey)) {
+            counter += 1;
+            ids.set(htmlNodeKey, `n${counter}`);
+            const htmlId = ids.get(htmlNodeKey);
+            pushNode(
+              htmlId,
+              `${entry.name}.${entry.format}\\n${shortFileName(entry.path)}`,
+              "html"
+            );
+          }
+          lines.push(`${nodeId} -->|import\\n${sanitizeLabel(entry.name)}| ${ids.get(htmlNodeKey)}`);
+        }
+      }
+    }
+
+    if (graphView === "compact" || graphView === "full" || graphView === "tags") {
+      for (const child of node.tag_imports || []) {
+        if (!child.cycle) {
+          const childId = visit(child);
+          lines.push(`${nodeId} -.->|tags| ${childId}`);
+        }
+      }
+    }
+
+    return nodeId;
+  }
+
+  visit(report, true);
+  lines.push("classDef graphRoot fill:#1f6feb,stroke:#0b3d91,color:#ffffff,stroke-width:2px;");
+  lines.push("classDef graphPml fill:#eef6ff,stroke:#4a90e2,color:#12324a,stroke-width:1.5px;");
+  lines.push("classDef graphTags fill:#fff4e5,stroke:#d38b00,color:#5c3b00,stroke-width:1.5px;");
+  lines.push("classDef graphHtml fill:#f4f4f4,stroke:#8a8a8a,color:#333333,stroke-width:1.5px;");
+  return lines.join("\n");
+}
+
 module.exports = {
   analyzePmlFile,
   formatPmlAnalysis,
   renderPmlAnalysisJSON,
   renderPmlAnalysisHTML,
   renderPmlAnalysisPDF,
+  renderPmlAnalysisGraph,
 };

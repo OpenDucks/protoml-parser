@@ -40,39 +40,105 @@ function parseArgs(argv = process.argv.slice(2)) {
     theme: null,
     command: null,
     path: null,
+    graphView: "compact",
+    graphDirection: "TD",
   };
+
+  const filteredArgv = [];
+  for (const arg of argv) {
+    if (/^-v{1,3}$/.test(arg)) {
+      options.verbosity = Math.max(options.verbosity, arg.length - 1);
+      continue;
+    }
+    filteredArgv.push(arg);
+  }
 
   const positional = [];
   const macroBase = path.resolve(__dirname, "..", "..", "macros");
 
-  if (argv[0] === "tags") {
+  if (filteredArgv[0] === "tags") {
     options.command = "tags";
-    options.path = argv[1] ? path.resolve(process.cwd(), argv[1]) : null;
-    options.format = argv[2] || "statistics";
+    options.path = filteredArgv[1] ? path.resolve(process.cwd(), filteredArgv[1]) : null;
+    options.format = filteredArgv[2] || "statistics";
     options.output = options.path
       ? path.join(
           path.dirname(options.path),
           `${path.basename(options.path, path.extname(options.path))}-tags-report`
         )
       : null;
+    parseSubcommandOptions(filteredArgv.slice(3), options);
     return options;
   }
 
-  if (argv[0] === "analyze") {
+  if (filteredArgv[0] === "analyze") {
     options.command = "analyze";
-    options.path = argv[1] ? path.resolve(process.cwd(), argv[1]) : null;
-    options.format = argv[2] || "statistics";
+    options.path = filteredArgv[1] ? path.resolve(process.cwd(), filteredArgv[1]) : null;
+    options.format = filteredArgv[2] || "statistics";
     options.output = options.path
       ? path.join(
           path.dirname(options.path),
           `${path.basename(options.path, path.extname(options.path))}-analysis-report`
         )
       : null;
+    parseSubcommandOptions(filteredArgv.slice(3), options);
     return options;
   }
 
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
+  if (filteredArgv[0] === "validate") {
+    options.command = "validate";
+    options.path = filteredArgv[1] ? path.resolve(process.cwd(), filteredArgv[1]) : null;
+    parseSubcommandOptions(filteredArgv.slice(2), options);
+    return options;
+  }
+
+  if (filteredArgv[0] === "macros") {
+    options.command = "macros";
+    options.path = filteredArgv[1] ? path.resolve(process.cwd(), filteredArgv[1]) : null;
+    parseSubcommandOptions(filteredArgv.slice(2), options);
+    return options;
+  }
+
+  if (filteredArgv[0] === "register") {
+    options.command = "register";
+    options.path = filteredArgv[1] ? path.resolve(process.cwd(), filteredArgv[1]) : null;
+    options.format = filteredArgv[2] || "statistics";
+    options.output = options.path
+      ? path.join(options.path, `${path.basename(options.path)}-register-report`)
+      : null;
+    parseSubcommandOptions(filteredArgv.slice(3), options);
+    return options;
+  }
+
+  if (filteredArgv[0] === "bundle") {
+    options.command = "bundle";
+    options.path = filteredArgv[1] ? path.resolve(process.cwd(), filteredArgv[1]) : null;
+    options.output = options.path
+      ? path.join(
+          path.dirname(options.path),
+          `${path.basename(options.path, path.extname(options.path))}-bundle`
+        )
+      : null;
+    parseSubcommandOptions(filteredArgv.slice(2), options);
+    return options;
+  }
+
+  if (filteredArgv[0] === "scaffold") {
+    options.command = "scaffold";
+    options.format = filteredArgv[1] || "meeting";
+    options.path = filteredArgv[2] ? path.resolve(process.cwd(), filteredArgv[2]) : process.cwd();
+    parseSubcommandOptions(filteredArgv.slice(3), options);
+    return options;
+  }
+
+  if (filteredArgv[0] === "init") {
+    options.command = "init";
+    options.path = filteredArgv[1] ? path.resolve(process.cwd(), filteredArgv[1]) : process.cwd();
+    parseSubcommandOptions(filteredArgv.slice(2), options);
+    return options;
+  }
+
+  for (let i = 0; i < filteredArgv.length; i++) {
+    const arg = filteredArgv[i];
 
     if (arg.startsWith("-v")) {
       options.verbosity = arg.length - 1;
@@ -93,7 +159,7 @@ function parseArgs(argv = process.argv.slice(2)) {
       printBuildVersion(packageJson.build || "unknown");
       process.exit(0);
     } else if (arg === "--listMacros") {
-      const next = argv[i + 1];
+      const next = filteredArgv[i + 1];
       if (!next) {
         console.error("[X] No path provided for --listMacros");
         process.exit(1);
@@ -140,7 +206,7 @@ function parseArgs(argv = process.argv.slice(2)) {
 
       process.exit(0);
     } else if (arg === "--macroHelp") {
-      const next = argv[i + 1];
+      const next = filteredArgv[i + 1];
       if (!next) {
         console.error("[X] No path provided for --macroHelp");
         process.exit(1);
@@ -160,7 +226,7 @@ function parseArgs(argv = process.argv.slice(2)) {
       console.log(docs);
       process.exit(0);
     } else if (arg === "--listMacrosJson") {
-      const next = argv[i + 1];
+      const next = filteredArgv[i + 1];
       if (!next) {
         console.error("[X] No path provided for --listMacrosJson");
         process.exit(1);
@@ -231,13 +297,13 @@ function parseArgs(argv = process.argv.slice(2)) {
       process.exit(0);
     } else if (
       arg === "--docs" &&
-      argv[i + 1] &&
-      !argv[i + 1].startsWith("-")
+      filteredArgv[i + 1] &&
+      !filteredArgv[i + 1].startsWith("-")
     ) {
       const helpDir = path.resolve(__dirname, "..", "..", "docs");
-      const fileName = argv[i + 1].endsWith(".pml")
-        ? argv[i + 1]
-        : `${argv[i + 1]}.pml`;
+      const fileName = filteredArgv[i + 1].endsWith(".pml")
+        ? filteredArgv[i + 1]
+        : `${filteredArgv[i + 1]}.pml`;
       const helpFile = path.join(helpDir, fileName);
 
       if (!fs.existsSync(helpFile)) {
@@ -287,6 +353,21 @@ function parseArgs(argv = process.argv.slice(2)) {
   return options;
 }
 
+function parseSubcommandOptions(args, options) {
+  for (const arg of args) {
+    if (arg.startsWith("-output=")) {
+      options.output = arg.split("=")[1];
+      options.outputExplicitlySet = true;
+    } else if (arg.startsWith("-graphView=")) {
+      options.graphView = arg.split("=")[1];
+    } else if (arg.startsWith("-graphDirection=")) {
+      options.graphDirection = arg.split("=")[1].toUpperCase();
+    } else if (arg.startsWith("-v")) {
+      options.verbosity = arg.length - 1;
+    }
+  }
+}
+
 function resolveOutputTarget(target, inputFile) {
   const resolvedTarget = path.resolve(process.cwd(), target);
   const sourceBaseName = path.basename(inputFile, path.extname(inputFile));
@@ -315,6 +396,12 @@ Usage:
   protoparser [options] <filename> <format> <output_dir>
   protoparser tags <tags_file> statistics
   protoparser analyze <pml_file> statistics
+  protoparser validate <pml_file>
+  protoparser macros <pml_file>
+  protoparser register <dir> statistics
+  protoparser bundle <pml_file>
+  protoparser scaffold meeting [target_dir]
+  protoparser init [target_dir]
   protoparser --listMacros <macro_dir>
   protoparser --macroHelp <macro_file>
   protoparser --listMacrosJson <macro_dir>
@@ -326,6 +413,8 @@ Options:
   -v, -vv, -vvv           Set verbosity level (1–3)
   -output=<filename>      Set output base name (without extension)
   -theme=<name>           Apply export theme (HTML/PDF only)
+  -graphView=<mode>       Set graph mode for analyze graph (compact, full, imports, tags)
+  -graphDirection=<dir>   Set Mermaid graph direction (TD, LR, RL, BT)
   -strict                 Enable strict parsing
   --listMacros "<dir>"      List available macros (e.g. {{macro_dir}})
   --macroHelp "<file>"      Show macro help from file
@@ -338,8 +427,19 @@ Options:
 Examples:
   protoparser Meeting.pml html
   protoparser Meeting.pml html ./html
+  protoparser Meeting.pml markdown
+  protoparser Meeting.pml text
   protoparser tags _tags.pml statistics
   protoparser analyze Meeting.pml statistics
+  protoparser analyze Meeting.pml graph
+  protoparser analyze Meeting.pml graph -graphView=full -graphDirection=LR
+  protoparser validate Meeting.pml
+  protoparser tags _tags.pml validate
+  protoparser macros Meeting.pml
+  protoparser register ./docs statistics
+  protoparser bundle Meeting.pml
+  protoparser scaffold meeting ./demo
+  protoparser init ./project
   protoparser -vv -output=notes Meeting.pml json
   protoparser --listMacros ./macros
   protoparser --macroHelp ./macros/finance/f_entry.pml

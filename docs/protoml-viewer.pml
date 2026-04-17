@@ -7,6 +7,8 @@ It renders the HTML output of your parsed `.pml` file and is intended as a simpl
 
 Only HTML rendering is supported.
 
+It is recommended to wrap the file path in double quotes.
+
 =examples:
-protoviewer Meeting.pml
-protoviewer Meeting.pml dark
+protoviewer "Meeting.pml"
+protoviewer "Meeting.pml" dark
