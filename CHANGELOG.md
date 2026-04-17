@@ -1,5 +1,12 @@
 # CHANGELOG.md
 
+## v1.1.2
+
+- Added `image` macro for embedding images. Supports local and remote images. Example usage:
+  - `@@macro=image:src=assets/logo.png`
+  - `@@macro=image:src=https://example.com/image.jpg`
+- Fixed an issue with comments being incorrectly or unintentionally parsed as content. Comments are now properly ignored or filtered during parsing.
+
 ## v1.1.1
 
 - Fixed an issue with the `--docs` command where it would not display documentation correctly.

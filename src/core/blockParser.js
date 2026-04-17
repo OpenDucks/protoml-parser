@@ -1,3 +1,5 @@
+const { stripInlineComment } = require("./commentUtils");
+
 function parseBlocks(tokens, options = {}) {
   const result = {};
   let currentBlock = null;
@@ -55,13 +57,14 @@ function parseBlocks(tokens, options = {}) {
           const subject = token.raw.match(/=([^\s]+)/)?.[1] || null;
           const tag = token.raw.match(/@tag=([^\s]+)/)?.[1] || null;
 
-          const cleanedText = token.value
+          const cleanedText = stripInlineComment(
+            token.value
             .replace(/^\[(x| )\]/, "")
             .replace(/@ptp=[^\s]+/g, "")
             .replace(/@tag=[^\s]+/g, "")
             .replace(/=[^\s]+/g, "")
-            .replace(/\/\/.*/, "") // comments
-            .trim();
+            .trim()
+          ).trim();
 
           result[currentBlock].push({
             raw: token.raw, // raw line (für referenceLinker)

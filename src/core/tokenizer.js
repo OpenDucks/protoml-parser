@@ -1,11 +1,12 @@
 const path = require("path")
+const { stripInlineComment } = require("./commentUtils")
 
 function tokenize(text) {
   const lines = text.split(/\r?\n/);
   const tokens = [];
 
   for (let i = 0; i < lines.length; i++) {
-    const raw = lines[i].split("//")[0].trim();
+    const raw = stripInlineComment(lines[i]).trim();
     const line = i + 1;
 
     if (raw === "" || raw.startsWith("//")) {
