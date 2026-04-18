@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "generated_at": "2026-04-18T10:15:57.278Z",
+  "packages": [
+    {
+      "name": "contract-kit",
+      "version": "1.0.0",
+      "registry": "registry",
+      "registry_source": "../registry",
+      "source_dir": "C:\\Users\\diege\\Documents\\GitHub\\protoml-parser\\examples\\macro-registry-suite\\registry\\packs\\contract-kit",
+      "installed_path": "C:\\Users\\diege\\Documents\\GitHub\\protoml-parser\\examples\\macro-registry-suite\\project\\.protoml\\macro-packs\\contract-kit",
+      "dependencies": [
+        {
+          "name": "base-kit"
+        }
+      ]
+    },
+    {
+      "name": "base-kit",
+      "version": "1.0.0",
+      "registry": "registry",
+      "registry_source": "../registry",
+      "source_dir": "C:\\Users\\diege\\Documents\\GitHub\\protoml-parser\\examples\\macro-registry-suite\\registry\\packs\\base-kit",
+      "installed_path": "C:\\Users\\diege\\Documents\\GitHub\\protoml-parser\\examples\\macro-registry-suite\\project\\.protoml\\macro-packs\\base-kit",
+      "dependencies": []
+    }
+  ]
+}

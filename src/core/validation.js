@@ -5,6 +5,7 @@ const { tokenize } = require("./tokenizer");
 const { parseBlocks } = require("./blockParser");
 const { parseFile } = require("./parser");
 const { BUILTIN_META_KEYS } = require("./metaKeys");
+const { analyzePmlTrustSync } = require("./trust");
 
 function normalizeFileRef(value) {
   return String(value || "").trim().replace(/^["']|["']$/g, "");
@@ -65,7 +66,7 @@ function findDuplicateMetaKeys(tokens) {
   return duplicates;
 }
 
-function validatePmlFile(filename) {
+function validatePmlFile(filename, options = {}) {
   const fullPath = path.resolve(filename);
   const issues = [];
 
@@ -93,12 +94,29 @@ function validatePmlFile(filename) {
     if (token.type === "meta" && BUILTIN_META_KEYS.includes(token.key) && String(token.raw || "").startsWith("@meta=")) {
       addIssue(issues, "warning", `Built-in meta key "${token.key}" is defined via @meta=. Prefer @${token.key}:... for clarity.`);
     }
+    if (token.type === "inlineMacro" && token.error) {
+      addIssue(issues, "error", `Invalid inline macro on line ${token.line}: ${token.error}`);
+    }
   }
 
   for (const importFile of Array.isArray(localAst.tags_import) ? localAst.tags_import : []) {
     const resolved = path.resolve(baseDir, normalizeFileRef(importFile));
     if (!fs.existsSync(resolved)) {
       addIssue(issues, "error", `Missing @tags_import file: ${resolved}`);
+    }
+  }
+
+  for (const importFile of Array.isArray(localAst.participants_import) ? localAst.participants_import : []) {
+    const resolved = path.resolve(baseDir, normalizeFileRef(importFile));
+    if (!fs.existsSync(resolved)) {
+      addIssue(issues, "error", `Missing @participants_import file: ${resolved}`);
+    }
+  }
+
+  for (const importFile of Array.isArray(localAst.macros_import) ? localAst.macros_import : []) {
+    const resolved = path.resolve(baseDir, normalizeFileRef(importFile));
+    if (!fs.existsSync(resolved)) {
+      addIssue(issues, "error", `Missing @macros_import file: ${resolved}`);
     }
   }
 
@@ -130,6 +148,30 @@ function validatePmlFile(filename) {
     addIssue(issues, "error", err.message);
   }
 
+  const trustReport = analyzePmlTrustSync(fullPath, {
+    registrySources: Array.isArray(options.trustRegistry) ? options.trustRegistry : [],
+  });
+
+  for (const macro of trustReport.macros || []) {
+    if (macro.effective_trust === "untrusted") {
+      addIssue(
+        issues,
+        options.trustMode === "strict" ? "error" : "warning",
+        `Untrusted macro "${macro.alias}" detected: ${macro.reasons.join(", ") || "policy violation"}`
+      );
+    }
+  }
+
+  for (const imported of trustReport.imports || []) {
+    if (imported.effective_trust === "untrusted") {
+      addIssue(
+        issues,
+        options.trustMode === "strict" ? "error" : "warning",
+        `Imported PML "${imported.name}" is untrusted: ${imported.reasons.join(", ") || "policy violation"}`
+      );
+    }
+  }
+
   const summary = {
     meta_keys: Object.keys(localAst.meta || {}),
     blocks_present: [
@@ -156,8 +198,11 @@ function validatePmlFile(filename) {
       references: countItems(localAst.references),
       attachments: countItems(localAst.attachments),
       macros: countKeys(localAst.macros),
+      inline_macros: countKeys(localAst.inline_macros),
       imports: countKeys(localAst.imports),
       tag_imports: countItems(localAst.tags_import),
+      participants_imports: countItems(localAst.participants_import),
+      macros_imports: countItems(localAst.macros_import),
     },
     imports: Object.entries(localAst.imports || {}).map(([name, entry]) => ({
       name,
@@ -165,10 +210,30 @@ function validatePmlFile(filename) {
       format: String(entry.format || "text").toLowerCase(),
     })),
     tags_imports: (Array.isArray(localAst.tags_import) ? localAst.tags_import : []).map(normalizeFileRef),
+    participants_imports: (Array.isArray(localAst.participants_import) ? localAst.participants_import : []).map(normalizeFileRef),
+    macros_imports: (Array.isArray(localAst.macros_import) ? localAst.macros_import : []).map(normalizeFileRef),
     macros: Object.entries(localAst.macros || {}).map(([name, file]) => ({
       name,
       file: normalizeFileRef(file),
     })),
+    inline_macros: Object.entries(localAst.inline_macros || {}).map(([name, entry]) => ({
+      name,
+      line: entry.line,
+    })),
+    trust: {
+      effective_trust: trustReport.effective_trust,
+      signature_status: trustReport.signature_status,
+      author: trustReport.author,
+      author_trust: trustReport.author_trust,
+      macro_counts: {
+        trusted: (trustReport.macros || []).filter((entry) => entry.effective_trust === "trusted").length,
+        unknown: (trustReport.macros || []).filter((entry) => entry.effective_trust === "unknown").length,
+        untrusted: (trustReport.macros || []).filter((entry) => entry.effective_trust === "untrusted").length,
+      },
+      imported_pml_untrusted: (trustReport.imports || []).filter((entry) => entry.effective_trust === "untrusted").length,
+      macros: trustReport.macros || [],
+      imports: trustReport.imports || [],
+    },
   };
 
   return {
@@ -274,6 +339,20 @@ function formatValidationReport(report, title = "Validation", verbosity = 0) {
       }
     }
 
+    if (Array.isArray(report.summary.participants_imports) && report.summary.participants_imports.length) {
+      lines.push("Participant imports:");
+      for (const entry of report.summary.participants_imports) {
+        lines.push(`- ${entry}`);
+      }
+    }
+
+    if (Array.isArray(report.summary.macros_imports) && report.summary.macros_imports.length) {
+      lines.push("Macro imports:");
+      for (const entry of report.summary.macros_imports) {
+        lines.push(`- ${entry}`);
+      }
+    }
+
     if (Array.isArray(report.summary.tag_sources) && report.summary.tag_sources.length) {
       lines.push("Tag sources:");
       for (const entry of report.summary.tag_sources) {
@@ -285,6 +364,21 @@ function formatValidationReport(report, title = "Validation", verbosity = 0) {
       lines.push("Macros:");
       for (const entry of report.summary.macros) {
         lines.push(`- ${entry.name}: ${entry.file}`);
+      }
+    }
+
+    if (verbosity >= 2 && Array.isArray(report.summary.inline_macros) && report.summary.inline_macros.length) {
+      lines.push("Inline macros:");
+      for (const entry of report.summary.inline_macros) {
+        lines.push(`- ${entry.name} (line ${entry.line})`);
+      }
+    }
+
+    if (report.summary.trust) {
+      lines.push(`Trust: ${report.summary.trust.effective_trust} (signature=${report.summary.trust.signature_status}, author=${report.summary.trust.author || "(none)"}, author_trust=${report.summary.trust.author_trust || "unknown"})`);
+      const macroCounts = report.summary.trust.macro_counts || {};
+      if (macroCounts.trusted || macroCounts.unknown || macroCounts.untrusted) {
+        lines.push(`Macro trust: trusted=${macroCounts.trusted || 0}, unknown=${macroCounts.unknown || 0}, untrusted=${macroCounts.untrusted || 0}`);
       }
     }
 
@@ -300,6 +394,16 @@ function formatValidationReport(report, title = "Validation", verbosity = 0) {
           lines.push(`- tag import detected: ${entry}`);
         }
       }
+      if (Array.isArray(report.summary.participants_imports)) {
+        for (const entry of report.summary.participants_imports) {
+          lines.push(`- participant import detected: ${entry}`);
+        }
+      }
+      if (Array.isArray(report.summary.macros_imports)) {
+        for (const entry of report.summary.macros_imports) {
+          lines.push(`- macro import detected: ${entry}`);
+        }
+      }
       if (Array.isArray(report.summary.tag_sources)) {
         for (const entry of report.summary.tag_sources) {
           lines.push(`- tag source detected: ${entry}`);
@@ -308,6 +412,21 @@ function formatValidationReport(report, title = "Validation", verbosity = 0) {
       if (Array.isArray(report.summary.macros)) {
         for (const entry of report.summary.macros) {
           lines.push(`- macro detected: ${entry.name} -> ${entry.file}`);
+        }
+      }
+      if (Array.isArray(report.summary.inline_macros)) {
+        for (const entry of report.summary.inline_macros) {
+          lines.push(`- inline macro detected: ${entry.name} (line ${entry.line})`);
+        }
+      }
+      if (Array.isArray(report.summary.trust?.macros)) {
+        for (const entry of report.summary.trust.macros) {
+          lines.push(`- macro trust: ${entry.alias} => ${entry.effective_trust} (signature=${entry.signature_status}, author=${entry.author_trust})`);
+        }
+      }
+      if (Array.isArray(report.summary.trust?.imports)) {
+        for (const entry of report.summary.trust.imports) {
+          lines.push(`- imported pml trust: ${entry.name} => ${entry.effective_trust}`);
         }
       }
     }

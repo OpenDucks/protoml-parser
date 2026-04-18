@@ -5,6 +5,9 @@
 
 Supported formats are `statistics`, `json`, `html`, and `pdf`.
 
+This `register` command is a document portfolio report for governance-style `.pml` collections.
+It is not related to macro package registries, `macro_install add_registry`, or `protoml.registry.json`.
+
 The register is intended for document portfolios such as meetings, contracts, onboarding files, compliance material, and internal records.
 It highlights:
 

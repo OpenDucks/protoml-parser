@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "name": "registry",
+  "packages": [
+    {
+      "name": "base-kit",
+      "version": "1.0.0",
+      "description": "ProtoML macro pack: base-kit",
+      "manifest": "packs/base-kit/protoml-pack.json",
+      "source": "packs/base-kit",
+      "dependencies": []
+    },
+    {
+      "name": "contract-kit",
+      "version": "1.0.0",
+      "description": "ProtoML macro pack: contract-kit",
+      "manifest": "packs/contract-kit/protoml-pack.json",
+      "source": "packs/contract-kit",
+      "dependencies": [
+        {
+          "name": "base-kit"
+        }
+      ]
+    }
+  ]
+}

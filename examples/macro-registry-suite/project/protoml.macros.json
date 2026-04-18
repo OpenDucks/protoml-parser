@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "registries": [
+    "../registry"
+  ],
+  "packages": [
+    {
+      "name": "contract-kit",
+      "version": "1.0.0"
+    }
+  ]
+}

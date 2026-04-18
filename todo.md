@@ -1,0 +1,1 @@
+- inline syntax fix (-b und -b- funzt nicht mehr)

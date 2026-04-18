@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Trust - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Trust</h1>
+<div class="topic-meta">Topic: <code>trust</code></div>
+<h2>Explanation</h2>
+<p><code>protoparser trust &lt;pml_file&gt;</code> evaluates the trust state of a ProtoML document and all macros actually used inside it.</p>
+<p>The trust model is intentionally lightweight:</p>
+<ul>
+<li>risk flags are detected statically</li>
+<li>signatures are stored in detached sidecar files like <code>file.pml.sig.json</code></li>
+<li>author trust is resolved from one or more registry sources</li>
+</ul>
+<p>To avoid unnecessary overhead, ProtoML distinguishes between:</p>
+<ul>
+<li><code>trusted</code>: valid signature by a trusted author and no dangerous macro flags</li>
+<li><code>unknown</code>: no signature or no trusted registry author match, but also no hard risk violation</li>
+<li><code>untrusted</code>: invalid signature, author marked untrusted, script usage, external URLs, or imported untrusted content</li>
+</ul>
+<p>Important clarification:</p>
+<ul>
+<li>plain HTML in a macro is only a capability flag, not an automatic trust failure</li>
+<li>JavaScript and external URLs are the hard downgrade conditions</li>
+<li>unsigned content is <code>unknown</code>, not automatically <code>trusted</code></li>
+<li>bundled built-in macros from the shipped macro directory can still resolve to <code>trusted</code> without a detached sidecar if they match the built-in hash manifest and have no hard risk flags</li>
+<li>extra or modified files inside that directory are not automatically trusted just because they live next to bundled macros</li>
+</ul>
+<p>Use <code>-trustRegistry=...</code> to point to a local registry directory, a registry JSON file, or a remote registry URL.</p>
+<p>How to read common trust results:</p>
+<ul>
+<li>a bundled <code>{{macro_dir}}</code> macro can be <code>trusted</code> without a detached signature if it is one of the known shipped built-ins and has no hard risk flag</li>
+<li>a bundled built-in macro can still be <code>untrusted</code> when it contains JavaScript or external URLs</li>
+<li>a normal local macro outside the built-in set is usually <code>unknown</code> until you sign it and optionally classify its author through a registry</li>
+<li>an imported <code>.pml</code> file can also stay <code>unknown</code> if it has no signature-based trust information</li>
+</ul>
+<p>Recommended workflow choices:</p>
+<p>1. Use built-in bundled macros through <code>{{macro_dir}}</code> when you want low-friction trusted defaults. 2. Use your own unsigned local macros when experimentation matters more than formal trust, and expect <code>unknown</code>. 3. Sign custom macros and add trusted authors to a registry when you want custom macros to resolve to <code>trusted</code>. 4. Review any macro with JavaScript or external URLs manually, even when it is bundled or signed.</p>
+<p>Detached sidecar workflow outside a registry:</p>
+<p>Author side:</p>
+<ul>
+<li>sign the macro or <code>.pml</code> file so a <code>*.sig.json</code> file is created next to it</li>
+<li>distribute the file and the sidecar together</li>
+</ul>
+<p>User side:</p>
+<ul>
+<li>use <code>verify</code> to check the detached signature</li>
+<li>use <code>trust</code> when you also have a registry that can classify the signing author</li>
+<li>without a registry, signed content can still be verified, but it usually remains <code>unknown</code> instead of <code>trusted</code></li>
+</ul>
+<h2>Examples</h2>
+<pre><code>protoparser trust &quot;Meeting.pml&quot;
+protoparser trust &quot;Meeting.pml&quot; -trustRegistry=&quot;./my-registry&quot;
+protoparser -vv trust &quot;Meeting.pml&quot; -trustRegistry=&quot;https://example.org/protoml.registry.json&quot;</code></pre>
+  </main>
+</body>
+</html>

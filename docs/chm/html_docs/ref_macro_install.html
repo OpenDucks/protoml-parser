@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Macro Install - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Macro Install</h1>
+<div class="topic-meta">Topic: <code>macro_install</code></div>
+<h2>Explanation</h2>
+<p><code>macro_install</code> is the parent command group for project-local external macro package and registry workflows.</p>
+<p>This command family is intended for macro installation outside the repository itself. The goal is to keep external macro packs in a project path such as <code>.protoml/macro-packs/</code> while allowing a project to declare and reproduce its required macro dependencies.</p>
+<p>These registries are macro package catalogs for install, sync, search, and trust lookup workflows. They are separate from <code>protoparser register &quot;&lt;dir&gt;&quot; ...</code>, which creates governance reports for document directories.</p>
+<p>Implemented command shape:</p>
+<p><code>protoparser macro_install sync</code> Reads a project definition file such as <code>protoml.macros.json</code> and installs all declared macro packs into the local project macro path. It also generates a macro import index at <code>.protoml/macro-packs/macros.index.pml</code>. If a requested version is no longer present in the registry, sync falls back to the newest available registry version and updates the project package entry to that resolved version.</p>
+<p><code>protoparser macro_install add_registry &quot;https://example.org/protoml/registry.json&quot;</code> Registers an external macro registry source. Local file paths and local registry directories are supported for sync. Remote registry URLs can already be stored in the project definition for future use.</p>
+<p><code>protoparser macro_install list_registries</code> Lists configured registry sources.</p>
+<p><code>protoparser macro_install remove_registry &quot;https://example.org/protoml/registry.json&quot;</code> Removes a configured registry source.</p>
+<p><code>protoparser macro_install install &quot;legal-pack&quot;</code> Adds a named macro pack to the project definition and synchronizes the local install directory.</p>
+<p><code>protoparser macro_install remove &quot;legal-pack&quot;</code> Removes an installed macro pack from the local project path.</p>
+<p><code>protoparser macro_install list</code> Lists installed macro packs for the current project.</p>
+<p><code>protoparser macro_install info &quot;legal-pack&quot;</code> Shows manifest and source details for an installed macro pack.</p>
+<p><code>protoparser macro_install search &quot;legal&quot;</code> Searches package entries across configured registries. You can also pass a registry source explicitly, including a local path or remote registry URL, even if that registry is not configured in the current project.</p>
+<p><code>protoparser macro_install init</code> Creates a <code>protoml.macros.json</code> project definition file plus <code>.protoml/</code> support files.</p>
+<p><code>protoparser macro_install init_registry &quot;./my-registry&quot;</code> Creates a local registry with <code>protoml.registry.json</code> and a <code>packs/</code> directory.</p>
+<p><code>protoparser macro_install init_pack &quot;legal-pack&quot; &quot;./my-registry&quot;</code> Creates a pack scaffold with <code>protoml-pack.json</code>, <code>macros/</code>, <code>themes/</code>, and a sample macro. If the target already contains a registry, the pack is added to that registry automatically.</p>
+<p><code>protoparser macro_install registry_add &quot;./my-registry&quot; &quot;./my-registry/packs/legal-pack&quot;</code> Adds or updates a pack entry in a registry file.</p>
+<p><code>protoparser macro_install registry_remove &quot;./my-registry&quot; &quot;legal-pack&quot;</code> Removes a pack entry from a registry file.</p>
+<p>Dependencies declared in <code>protoml-pack.json</code> are resolved during <code>sync</code>. If a dependency does not declare a registry explicitly, the current registry is used.</p>
+<p>The generated import index can be used directly in a ProtoML document:</p>
+<p><code>@macros_import &quot;.protoml/macro-packs/macros.index.pml&quot;</code></p>
+<h2>Examples</h2>
+<pre><code>protoparser macro_install init
+protoparser macro_install init_registry &quot;./my-registry&quot;
+protoparser macro_install init_pack &quot;legal-pack&quot; &quot;./my-registry&quot;
+protoparser macro_install sync
+protoparser macro_install add_registry &quot;./my-registry&quot;
+protoparser macro_install install &quot;legal-pack&quot;
+protoparser macro_install remove &quot;legal-pack&quot;
+protoparser macro_install list
+protoparser macro_install search &quot;legal-pack&quot;
+protoparser macro_install search &quot;legal-pack&quot; &quot;./my-registry&quot;
+protoparser macro_install search &quot;legal-pack&quot; &quot;https://example.org/protoml/registry.json&quot;
+
+@macros_import &quot;.protoml/macro-packs/macros.index.pml&quot;</code></pre>
+  </main>
+</body>
+</html>

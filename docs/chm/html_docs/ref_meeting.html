@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Meeting - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Meeting</h1>
+<div class="topic-meta">Topic: <code>meeting</code></div>
+<h2>Explanation</h2>
+<p>The <code>@meeting</code> block is used to structure and document meetings within a ProtoML file.</p>
+<p>It is useful for meeting protocols, agendas, discussion points, and decisions, especially when combined with <code>@participants</code>, <code>@subjects</code>, <code>@tasks</code>, and <code>@notes</code>.</p>
+<p>You can use <code>@@e=...</code> to insert previously defined entries such as subjects, participants, or tags, and <code>@@macro=...</code> to embed macros directly into the meeting content.</p>
+<p>The layout typically follows lightweight Markdown-style syntax such as <code>#</code>, <code>##</code>, and plain text lines.</p>
+<p><code>@meeting</code> can also be written as <code>@meeting &quot;Custom Title&quot;</code> to set the rendered meeting section title.</p>
+<h2>Examples</h2>
+<pre><code>@meeting &quot;Minutes&quot;
+# Meeting Title: @@e=0
+## Participants
+@@e=pt1 , @@e=pt2
+## Topics
+@@macro=myMacro:title=IMPORTANT;text=@@e=1</code></pre>
+  </main>
+</body>
+</html>

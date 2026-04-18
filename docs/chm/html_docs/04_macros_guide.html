@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Macros Guide - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Macros Guide</h1>
+        <p>ProtoML macros provide reusable rendering templates, mainly for HTML-oriented output.</p>
+        <h2>What macros are good for</h2>
+        <p>Macros are best when the same visual or structured output pattern appears repeatedly across documents. They help you standardize presentation without turning your documents into copy-pasted HTML fragments.</p>
+        <h2>Using bundled macros</h2>
+        <pre><code>@macro badge "{{macro_dir}}/badge.pml"
+@@macro=badge:text=review</code></pre>
+        <p>Prefer quotes around paths in CLI usage.</p>
+        <pre><code>protoparser --listMacros "{{macro_dir}}"
+protoparser --macroHelp "{{macro_dir}}/finance/f_entry.pml"</code></pre>
+        <h2>Bundled macro areas</h2>
+        <ul>
+          <li>standalone: <code>alert</code>, <code>badge</code>, <code>calendar_event</code>, <code>clicktoreveal</code>, <code>codeblock_copy</code>, <code>image</code>, <code>progress_bar</code>, <code>quote</code>, <code>spoiler</code>, <code>tts</code>, <code>warn_box</code></li>
+          <li>grouped sets: <code>actions</code>, <code>decisions</code>, <code>finance</code>, <code>highlight</code>, <code>summary</code>, <code>taskflow</code>, <code>timeline</code></li>
+        </ul>
+        <h2>Writing custom macros</h2>
+        <pre><code>@new_macro
+=name:statusPill
+=template:
+&lt;span class="status-pill status-{{state}}"&gt;{{label}}&lt;/span&gt;</code></pre>
+        <p>When writing a macro, keep the input parameters obvious and stable. The best custom macros are easy to understand from the call site alone.</p>
+        <h2>When to prefer imports, macros, or themes</h2>
+        <ul>
+          <li>Use imports when the repeated thing is mostly content</li>
+          <li>Use macros when you need a reusable component with its own structure and presentation, such as alerts, badges, timelines, summaries, or cards</li>
+          <li>Use themes when the desired effect is document-wide styling such as colors, typography, spacing, or general page chrome</li>
+          <li>Use tags when the repeated thing is really classification, not rendering</li>
+        </ul>
+        <h2>External macro pack workflow</h2>
+        <pre><code>protoparser macro_install init
+protoparser macro_install init_registry "./my-registry"
+protoparser macro_install init_pack "legal-pack" "./my-registry"
+protoparser macro_install add_registry "./my-registry"
+protoparser macro_install install "legal-pack"</code></pre>
+        <h2>Use installed packs in a document</h2>
+        <pre><code>@macros_import ".protoml/macro-packs/macros.index.pml"</code></pre>
+        <p>This is useful when multiple teams or projects should consume the same curated macro set instead of copying files around manually.</p>
+        <h2>Practical advice</h2>
+        <ul>
+          <li>Use imports for content reuse and macros for rendering reuse</li>
+          <li>Prefer themes over macros when you only want to change the overall visual look of the document</li>
+          <li>Start with bundled macros before creating a shared pack workflow</li>
+          <li>Treat untrusted macro files as unsafe, especially when they include JavaScript</li>
+          <li>Keep macro names and parameter names predictable across a macro family</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="06_concepts.html">ProtoML Concepts</a></li>
+          <li><a href="08a_reuse_and_imports.html">Reuse And Imports Guide</a></li>
+          <li><a href="08_macro_registry_guide.html">Own Macro Registry Guide</a></li>
+          <li><a href="11_examples_cookbook.html">Examples Cookbook</a></li>
+          <li><a href="03_cli_workflows.html">CLI Reference</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

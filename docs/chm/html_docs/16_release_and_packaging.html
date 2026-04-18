@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Release And Packaging - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Release And Packaging</h1>
+        <p>ProtoML releases are more than a single npm publish. The repository already supports collecting CLI binaries, CHM help, and checksums into a release-style <code>dist/</code> directory.</p>
+        <h2>What a release set contains</h2>
+        <ul>
+          <li>Standalone Windows and Linux executables</li>
+          <li>The compiled <code>protoml-help.chm</code> file</li>
+          <li>A <code>SHA256SUMS.txt</code> file for integrity checks</li>
+        </ul>
+        <h2>Build the web and CHM artifacts when needed</h2>
+        <pre><code>npm run build:web
+npm run build:chm:project
+npm run build:chm</code></pre>
+        <p>The web build produces the browser-side parser bundle used by the independent viewer in <code>web/index.html</code>.</p>
+        <h2>Executable packaging</h2>
+        <pre><code>npm run build:exe</code></pre>
+        <p>This produces standalone binaries from the Node-based CLI using the package configuration in <code>package.json</code>.</p>
+        <h2>Release preparation workflow</h2>
+        <pre><code>npm run bump</code></pre>
+        <p>The bump workflow updates the build number, rebuilds the executables, compiles the CHM, copies the CHM into <code>dist/</code>, and regenerates the checksum file.</p>
+        <h2>Checksums</h2>
+        <p><code>SHA256SUMS.txt</code> contains the generated release checksums and now also records the UTC timestamp when the checksum file was generated.</p>
+        <h2>What to verify before publishing</h2>
+        <ul>
+          <li>The CLI binaries actually start on the target platforms</li>
+          <li>The CHM help opens on Windows</li>
+          <li>The web bundle and independent viewer still render correctly</li>
+          <li>The checksum file matches the final release artifacts</li>
+          <li>The version and build number are consistent across outputs</li>
+        </ul>
+        <h2>Why this guide matters</h2>
+        <p>As ProtoML grows, release quality becomes a workflow of its own. Packaging, checksums, offline help, and platform-specific binaries all need to stay in sync.</p>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="05_windows_help_and_dev.html">Windows Help And Development</a></li>
+          <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
+          <li><a href="03_cli_workflows.html">CLI Reference</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

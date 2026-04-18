@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Participants Import - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Participants Import</h1>
+<div class="topic-meta">Topic: <code>participants_import</code></div>
+<h2>Explanation</h2>
+<p>The <code>@participants_import</code> command includes an external <code>.pml</code> participant definition file into the current ProtoML document.</p>
+<p>Participants imported this way can be reused in task assignments via <code>@ptp=id</code> and in references such as <code>@@ref=participants:id:name</code>.</p>
+<p>The external file should start with <code>@participants</code> and contain <code>=id:Name[,alias,email]</code> entries.</p>
+<p>Typical workflow:</p>
+<ul>
+<li>create a shared <code>participants.pml</code> file with an <code>@participants</code> block</li>
+<li>import that file into the meeting document with <code>@participants_import &quot;...&quot;</code></li>
+<li>reuse the imported IDs in tasks, <code>@@e=...</code>, and <code>@@ref=participants:...</code></li>
+</ul>
+<p>The import path should be wrapped in double quotes.</p>
+<h2>Examples</h2>
+<pre><code>Shared file `participants.pml`:
+
+@participants
+=lead:Jane Doe,jdoe,jdoe@example.com
+=ops:Max Mustermann,mmustermann,max@example.com
+
+Main meeting file:
+
+@participants_import &quot;participants.pml&quot;
+@protocol &quot;Weekly Sync - {{date}}&quot;
+
+@tasks
+-[ ] Prepare release notes @ptp=lead
+-[ ] Check deployment logs @ptp=ops
+
+@meeting &quot;Minutes&quot;
+# Weekly Sync
+Responsible: @@e=lead
+Lead mail: @@ref=participants:lead:email</code></pre>
+  </main>
+</body>
+</html>

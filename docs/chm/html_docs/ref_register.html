@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Register - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Register</h1>
+<div class="topic-meta">Topic: <code>register</code></div>
+<h2>Explanation</h2>
+<p><code>protoparser register &quot;&lt;dir&gt;&quot; &lt;format&gt;</code> scans a directory recursively and builds a governance-oriented register for document-like <code>.pml</code> files.</p>
+<p>Supported formats are <code>statistics</code>, <code>json</code>, <code>html</code>, and <code>pdf</code>.</p>
+<p>This <code>register</code> command is a document portfolio report for governance-style <code>.pml</code> collections. It is not related to macro package registries, <code>macro_install add_registry</code>, or <code>protoml.registry.json</code>.</p>
+<p>The register is intended for document portfolios such as meetings, contracts, onboarding files, compliance material, and internal records. It highlights:</p>
+<ul>
+<li>missing governance metadata such as <code>record_id</code>, <code>author</code>, <code>version</code>, or <code>status</code></li>
+<li>expired documents via <code>@valid_until</code></li>
+<li>documents due for review via <code>@review_date</code></li>
+<li>documents with open tasks</li>
+<li>status distributions across the directory</li>
+</ul>
+<p>Use it on document directories rather than broad repository roots when possible.</p>
+<h2>Examples</h2>
+<pre><code>protoparser register &quot;meetings&quot; statistics
+protoparser register &quot;contracts&quot; html
+protoparser -v register &quot;examples/feature-suite&quot; statistics</code></pre>
+  </main>
+</body>
+</html>

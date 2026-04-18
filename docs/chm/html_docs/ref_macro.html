@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Macro - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Macro</h1>
+<div class="topic-meta">Topic: <code>macro</code></div>
+<h2>Explanation</h2>
+<p>The <code>@macro</code> command imports a named macro file from a specified path, making it available for inline use with <code>@@macro=name:param=value</code>.</p>
+<p>This is the external-file counterpart to inline <code>@new_macro</code> definitions inside a normal <code>.pml</code> document.</p>
+<p>A macro file must begin with <code>@new_macro</code>, include a <code>=name:</code> declaration, and define a <code>=template:</code> block. Templates can contain <code>{{variable}}</code> placeholders that are replaced when the macro is called.</p>
+<p>Macros are especially useful for reusable rendered components such as warnings, callouts, badges, cards, layout helpers, and injected logic such as buttons or dynamic fields.</p>
+<p>If you only want to change the overall document look, prefer a renderer theme instead of a macro.</p>
+<p>Templates can include JavaScript and HTML, which are only rendered in the <code>html</code> export. JavaScript is not stripped or sanitized.</p>
+<p>Paths should be wrapped in double quotes. This is strongly recommended when using <code>{{macro_dir}}</code>, because some shells may otherwise interpret characters before ProtoML receives the path.</p>
+<p>⚠️ **Security Notice**: JavaScript and external URLs in macros downgrade trust immediately. Plain HTML alone is not a trust failure, but still means the macro is HTML-capable and should be reviewed.</p>
+<h2>Examples</h2>
+<pre><code>@macro warningBox &quot;macros/warning.pml&quot;
+@macro image &quot;{{macro_dir}}/image.pml&quot;
+@@macro=warningBox:title=Alert;text=Something went wrong.
+
+A valid macro file might look like this:
+
+@new_macro
+=name:warningBox
+=docs:
+Displays a warning box with a title and description.
+
+=template:
+&lt;div class=&quot;warn-box&quot;&gt;
+  &lt;strong&gt;{{title}}&lt;/strong&gt;&lt;br&gt;
+  {{text}}
+&lt;/div&gt;
+
+You can also include JavaScript:
+
+@new_macro
+=name:speak
+=docs:
+Reads the text aloud using the browser's SpeechSynthesis API.
+
+=template:
+&lt;button onclick=&quot;speechSynthesis.speak(new SpeechSynthesisUtterance('{{text}}'))&quot;&gt;
+  🔊 Speak
+&lt;/button&gt;
+
+Then use it like:
+
+@@macro=speak:text=This will be spoken by your browser.</code></pre>
+  </main>
+</body>
+</html>

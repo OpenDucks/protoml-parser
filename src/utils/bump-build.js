@@ -61,7 +61,13 @@ function createChecksums() {
   });
 
   const checksumsPath = path.join(distDir, "SHA256SUMS.txt");
-  fs.writeFileSync(checksumsPath, lines.join("\n") + "\n", "utf8");
+  const generatedAtUtc = new Date().toISOString();
+  const header = [
+    "# ProtoML release checksums",
+    `# Generated at (UTC): ${generatedAtUtc}`,
+    "",
+  ];
+  fs.writeFileSync(checksumsPath, [...header, ...lines].join("\n") + "\n", "utf8");
   console.log(`Checksums written: ${checksumsPath}`);
 }
 

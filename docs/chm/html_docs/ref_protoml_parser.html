@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Protoml Parser - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Protoml Parser</h1>
+<div class="topic-meta">Topic: <code>protoml-parser</code></div>
+<h2>Explanation</h2>
+<p><code>protoml-parser</code> (alias <code>protoparser</code>) is the main CLI tool used to parse <code>.pml</code> (ProtoML) files and convert them into structured output formats such as HTML, JSON, PDF, Markdown, or plain text.</p>
+<p>It supports external macro loading, tag files, participant assignments, dynamic echoing with <code>@@e=</code>, macro usage within the <code>@meeting</code> block, governance-style register reports, and bundled archive output.</p>
+<p>External macro package workflows are documented under <code>macro_install</code> and <code>macro_registry</code>. These documents describe how project-local macro installation, custom registries, and macro dependencies can be organized. Those registry topics are separate from the normal <code>protoparser register &quot;&lt;dir&gt;&quot; ...</code> command, which scans document folders and produces governance reports.</p>
+<p>Windows-native offline help is available through <code>protoparser chm</code>.</p>
+<p>It is the recommended way to build machine-parseable exports of structured notes, tasks, and protocols.</p>
+<p>It is recommended to wrap file and directory paths in double quotes, especially when using <code>{{macro_dir}}</code>.</p>
+<h2>Examples</h2>
+<pre><code>protoparser &quot;Meeting.pml&quot; html
+protoparser &quot;Meeting.pml&quot; markdown
+protoparser &quot;Meeting.pml&quot; text
+protoparser register &quot;meetings&quot; statistics
+protoparser bundle &quot;Meeting.pml&quot;
+protoparser chm
+protoparser -vv -output=summary &quot;Meeting.pml&quot; json</code></pre>
+  </main>
+</body>
+</html>

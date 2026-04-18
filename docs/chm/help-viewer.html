@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProtoML Help Viewer - ProtoML 1.4.2+build57</title>
+  <style>
+    :root {
+      --bg: #eef3f9;
+      --panel: #ffffff;
+      --panel-2: #f7fafc;
+      --line: #d7e0ea;
+      --ink: #1f2933;
+      --muted: #617082;
+      --accent: #0f4c81;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: linear-gradient(180deg, #f7fbff 0%, #e9eff7 100%);
+      color: var(--ink);
+    }
+    .shell {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 18px;
+      background: #103b63;
+      color: #fff;
+    }
+    .topbar a {
+      color: #fff;
+      text-decoration: none;
+    }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) 1fr;
+      gap: 14px;
+      padding: 14px;
+      min-height: 0;
+    }
+    .panel {
+      min-height: 0;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--panel);
+      box-shadow: 0 18px 36px rgba(16, 34, 58, 0.08);
+    }
+    .panel-head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    iframe {
+      width: 100%;
+      height: calc(100% - 45px);
+      border: 0;
+      background: #fff;
+    }
+    @media (max-width: 960px) {
+      .workspace {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(220px, 36vh) 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div>
+        <strong>ProtoML Help Viewer</strong>
+        <span style="opacity:.85;"> Version 1.4.2+build57</span>
+      </div>
+      <a href="toc.html" target="_blank" rel="noreferrer">Open Contents Page</a>
+    </header>
+    <main class="workspace">
+      <section class="panel">
+        <div class="panel-head">Contents</div>
+        <iframe id="tocFrame" src="toc.html" title="ProtoML help contents"></iframe>
+      </section>
+      <section class="panel">
+        <div class="panel-head" id="topicLabel">Topic</div>
+        <iframe id="contentFrame" src="html_docs/00_overview.html" title="ProtoML help content"></iframe>
+      </section>
+    </main>
+  </div>
+  <script>
+    const tocFrame = document.getElementById("tocFrame");
+    const contentFrame = document.getElementById("contentFrame");
+    const topicLabel = document.getElementById("topicLabel");
+    const defaultTopic = "html_docs/00_overview.html";
+
+    function normalizeTarget(href) {
+      if (!href) return null;
+      if (href.startsWith("http://") || href.startsWith("https://")) return href;
+      if (href.startsWith("html_docs/") || href === "toc.html") return href;
+      if (href.startsWith("../html_docs/")) return href.slice(3);
+      if (href.startsWith("../toc.html")) return "toc.html";
+      return href;
+    }
+
+    function openTopic(target) {
+      const normalized = normalizeTarget(target) || defaultTopic;
+      if (normalized === "toc.html") {
+        contentFrame.src = defaultTopic;
+        return;
+      }
+      contentFrame.src = normalized;
+      topicLabel.textContent = normalized.replace(/^html_docs\//, "");
+      history.replaceState(null, "", "?topic=" + encodeURIComponent(normalized));
+    }
+
+    function wireFrame(frame) {
+      frame.addEventListener("load", () => {
+        try {
+          const doc = frame.contentDocument;
+          if (!doc) return;
+          for (const link of doc.querySelectorAll("a[href]")) {
+            link.addEventListener("click", (event) => {
+              const href = link.getAttribute("href");
+              const target = normalizeTarget(href);
+              if (!target || target.startsWith("http://") || target.startsWith("https://")) {
+                return;
+              }
+              event.preventDefault();
+              openTopic(target);
+            });
+          }
+        } catch (error) {
+          console.warn("Failed to wire help navigation", error);
+        }
+      });
+    }
+
+    wireFrame(tocFrame);
+    wireFrame(contentFrame);
+
+    const initialTopic = new URLSearchParams(location.search).get("topic");
+    if (initialTopic) {
+      openTopic(initialTopic);
+    } else {
+      openTopic(defaultTopic);
+    }
+  </script>
+</body>
+</html>

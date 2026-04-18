@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>New Macro - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>New Macro</h1>
+<div class="topic-meta">Topic: <code>new_macro</code></div>
+<h2>Explanation</h2>
+<p>Defines a new macro that can be used with <code>@@macro=...</code>.</p>
+<p><code>@new_macro</code> can be used in a standalone macro file or directly inside a normal <code>.pml</code> document. Inline document macros are useful when a macro only belongs to that one document and should not be maintained as a separate file.</p>
+<p>Templates can use <code>{{variable}}</code> syntax to inject values from the invocation.</p>
+<p>⚠️ Macros rendered in HTML may include JS, which is treated as untrusted by the trust checker. Plain HTML alone is only a capability flag and does not automatically fail trust checks.</p>
+<h2>Examples</h2>
+<pre><code>Inline in a normal document:
+
+@new_macro
+=name:inline_warning
+=template:
+&lt;div class=&quot;warn-box&quot;&gt;&lt;strong&gt;{{title}}&lt;/strong&gt;&lt;br&gt;{{text}}&lt;/div&gt;
+@end_macro
+
+@@macro=inline_warning:title=Alert;text=Something happened
+
+Standalone macro file:
+
+@new_macro
+=name:warning
+=docs:
+Displays a warning box with a title and description.
+=template:
+&lt;div class=&quot;warn-box&quot;&gt;&lt;strong&gt;{{title}}&lt;/strong&gt;&lt;br&gt;{{text}}&lt;/div&gt;
+
+Use that external file in a document like this:
+
+@macro warning &quot;./macros/warning.pml&quot;
+@@macro=warning:title=Alert;text=Something happened</code></pre>
+  </main>
+</body>
+</html>

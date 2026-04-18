@@ -13,6 +13,15 @@ function resolveMacroPath(inputPath, macroBase) {
 }
 
 function extractSection(raw, sectionName) {
+  const trimmed = String(raw || "").trimStart();
+  if (trimmed.startsWith("@help")) {
+    return extractKnownSection(raw, sectionName, ["name", "docs", "examples"]);
+  }
+
+  if (trimmed.startsWith("@new_macro")) {
+    return extractKnownSection(raw, sectionName, ["name", "docs", "template"]);
+  }
+
   const escapedSectionName = sectionName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const headerMatch = new RegExp(`^=${escapedSectionName}:`, "m").exec(raw);
   if (!headerMatch || headerMatch.index == null) {
@@ -29,6 +38,35 @@ function extractSection(raw, sectionName) {
   return raw.slice(contentStart, contentEnd).trim() || null;
 }
 
+function extractKnownSection(raw, sectionName, orderedSectionNames) {
+  const escapedSectionName = sectionName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const headerMatch = new RegExp(`^=${escapedSectionName}:`, "m").exec(raw);
+  if (!headerMatch || headerMatch.index == null) {
+    return null;
+  }
+
+  const contentStart = headerMatch.index + headerMatch[0].length;
+  const currentIndex = orderedSectionNames.indexOf(sectionName);
+  const nextSectionNames = currentIndex >= 0
+    ? orderedSectionNames.slice(currentIndex + 1)
+    : [];
+
+  if (!nextSectionNames.length) {
+    return raw.slice(contentStart).trim() || null;
+  }
+
+  const nextSectionPattern = nextSectionNames
+    .map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|");
+  const rest = raw.slice(contentStart);
+  const nextSectionMatch = new RegExp(`^=(?:${nextSectionPattern}):`, "m").exec(rest);
+  const contentEnd = nextSectionMatch
+    ? contentStart + nextSectionMatch.index
+    : raw.length;
+
+  return raw.slice(contentStart, contentEnd).trim() || null;
+}
+
 function parseArgs(argv = process.argv.slice(2)) {
   const options = {
     filename: null,
@@ -37,11 +75,15 @@ function parseArgs(argv = process.argv.slice(2)) {
     outputExplicitlySet: false,
     verbosity: 0,
     strict: false,
+    hideMeta: false,
     theme: null,
     command: null,
     path: null,
+    extraArgs: [],
     graphView: "compact",
     graphDirection: "TD",
+    trustMode: "warn",
+    trustRegistry: [],
   };
 
   const filteredArgv = [];
@@ -91,9 +133,43 @@ function parseArgs(argv = process.argv.slice(2)) {
     return options;
   }
 
+  if (filteredArgv[0] === "trust") {
+    options.command = "trust";
+    options.path = filteredArgv[1] ? path.resolve(process.cwd(), filteredArgv[1]) : null;
+    parseSubcommandOptions(filteredArgv.slice(2), options);
+    return options;
+  }
+
+  if (filteredArgv[0] === "sign") {
+    options.command = "sign";
+    options.format = filteredArgv[1] || null;
+    options.path = filteredArgv[2]
+      ? path.resolve(process.cwd(), resolveMacroPath(filteredArgv[2], macroBase))
+      : null;
+    parseSubcommandOptions(filteredArgv.slice(3), options);
+    return options;
+  }
+
+  if (filteredArgv[0] === "verify") {
+    options.command = "verify";
+    options.format = filteredArgv[1] || null;
+    options.path = filteredArgv[2]
+      ? path.resolve(process.cwd(), resolveMacroPath(filteredArgv[2], macroBase))
+      : null;
+    parseSubcommandOptions(filteredArgv.slice(3), options);
+    return options;
+  }
+
   if (filteredArgv[0] === "macros") {
     options.command = "macros";
     options.path = filteredArgv[1] ? path.resolve(process.cwd(), filteredArgv[1]) : null;
+    parseSubcommandOptions(filteredArgv.slice(2), options);
+    return options;
+  }
+
+  if (filteredArgv[0] === "macro_install") {
+    options.command = "macro_install";
+    options.format = filteredArgv[1] || "help";
     parseSubcommandOptions(filteredArgv.slice(2), options);
     return options;
   }
@@ -137,6 +213,47 @@ function parseArgs(argv = process.argv.slice(2)) {
     return options;
   }
 
+  if (filteredArgv[0] === "chm") {
+    options.command = "chm";
+    const mode = filteredArgv[1];
+    if (["app", "browser", "open", "path", "download", "compiled", "compiled_path"].includes(mode)) {
+      options.format = mode;
+      options.path = filteredArgv[2] && !filteredArgv[2].startsWith("-")
+        ? filteredArgv[2]
+        : null;
+      parseSubcommandOptions(filteredArgv.slice(options.path ? 3 : 2), options);
+    } else {
+      options.format = "app";
+      options.path = filteredArgv[1] && !filteredArgv[1].startsWith("-")
+        ? filteredArgv[1]
+        : null;
+      parseSubcommandOptions(filteredArgv.slice(options.path ? 2 : 1), options);
+    }
+    return options;
+  }
+
+  if (filteredArgv[0] === "viewer") {
+    options.command = "viewer";
+    const mode = filteredArgv[1];
+    if (["browser", "app", "path"].includes(mode)) {
+      options.format = mode;
+      options.path = filteredArgv[2] ? path.resolve(process.cwd(), filteredArgv[2]) : null;
+      parseSubcommandOptions(filteredArgv.slice(3), options);
+    } else {
+      options.format = "browser";
+      options.path = filteredArgv[1] ? path.resolve(process.cwd(), filteredArgv[1]) : null;
+      parseSubcommandOptions(filteredArgv.slice(2), options);
+    }
+    return options;
+  }
+
+  if (filteredArgv[0] === "associate") {
+    options.command = "associate";
+    options.format = filteredArgv[1] || "pml";
+    parseSubcommandOptions(filteredArgv.slice(2), options);
+    return options;
+  }
+
   for (let i = 0; i < filteredArgv.length; i++) {
     const arg = filteredArgv[i];
 
@@ -147,8 +264,14 @@ function parseArgs(argv = process.argv.slice(2)) {
       options.outputExplicitlySet = true;
     } else if (arg.startsWith("-theme=")) {
       options.theme = arg.split("=")[1];
+    } else if (arg === "-hideMeta") {
+      options.hideMeta = true;
     } else if (arg === "-strict") {
       options.strict = true;
+    } else if (arg.startsWith("-trust=")) {
+      options.trustMode = arg.split("=")[1];
+    } else if (arg.startsWith("-trustRegistry=")) {
+      options.trustRegistry.push(arg.split("=")[1]);
     } else if (arg === "--help") {
       printHelp();
       process.exit(0);
@@ -364,6 +487,12 @@ function parseSubcommandOptions(args, options) {
       options.graphDirection = arg.split("=")[1].toUpperCase();
     } else if (arg.startsWith("-v")) {
       options.verbosity = arg.length - 1;
+    } else if (arg.startsWith("-trust=")) {
+      options.trustMode = arg.split("=")[1];
+    } else if (arg.startsWith("-trustRegistry=")) {
+      options.trustRegistry.push(arg.split("=")[1]);
+    } else {
+      options.extraArgs.push(arg);
     }
   }
 }
@@ -397,11 +526,18 @@ Usage:
   protoparser tags <tags_file> statistics
   protoparser analyze <pml_file> statistics
   protoparser validate <pml_file>
+  protoparser trust <pml_file>
+  protoparser sign <macro|pml> <file>
+  protoparser verify <macro|pml> <file>
   protoparser macros <pml_file>
+  protoparser macro_install <subcommand> [...]
   protoparser register <dir> statistics
   protoparser bundle <pml_file>
   protoparser scaffold meeting [target_dir]
   protoparser init [target_dir]
+  protoparser chm [app|browser|path|compiled|compiled_path|download] [topic]
+  protoparser viewer [browser|app|path] [file]
+  protoparser associate [pml]
   protoparser --listMacros <macro_dir>
   protoparser --macroHelp <macro_file>
   protoparser --listMacrosJson <macro_dir>
@@ -413,9 +549,12 @@ Options:
   -v, -vv, -vvv           Set verbosity level (1–3)
   -output=<filename>      Set output base name (without extension)
   -theme=<name>           Apply export theme (HTML/PDF only)
+  -hideMeta               Hide metadata sections in rendered output
   -graphView=<mode>       Set graph mode for analyze graph (compact, full, imports, tags)
   -graphDirection=<dir>   Set Mermaid graph direction (TD, LR, RL, BT)
   -strict                 Enable strict parsing
+  -trust=<mode>           Set trust mode (off, warn, strict)
+  -trustRegistry=<src>    Add trust registry source (file, dir, or URL)
   --listMacros "<dir>"      List available macros (e.g. {{macro_dir}})
   --macroHelp "<file>"      Show macro help from file
   --listMacrosJson "<dir>"  Output all macros as JSON array (with docs/template)
@@ -434,12 +573,32 @@ Examples:
   protoparser analyze Meeting.pml graph
   protoparser analyze Meeting.pml graph -graphView=full -graphDirection=LR
   protoparser validate Meeting.pml
+  protoparser trust Meeting.pml -trustRegistry=./my-registry
+  protoparser sign macro ./macros/warn_box.pml ./keys/alice-private.pem Alice alice-main
+  protoparser verify macro ./macros/warn_box.pml -trustRegistry=./my-registry
   protoparser tags _tags.pml validate
   protoparser macros Meeting.pml
+  protoparser macro_install init
+  protoparser macro_install init_registry ./my-registry
+  protoparser macro_install init_pack legal-pack ./my-registry
+  protoparser macro_install add_registry ./my-registry
+  protoparser macro_install add_package legal-pack 1.0.0
+  protoparser macro_install sync
   protoparser register ./docs statistics
   protoparser bundle Meeting.pml
   protoparser scaffold meeting ./demo
   protoparser init ./project
+  protoparser chm
+  protoparser chm browser
+  protoparser chm path
+  protoparser chm compiled
+  protoparser chm compiled_path
+  protoparser chm download
+  protoparser viewer
+  protoparser viewer browser ./meeting.pml
+  protoparser viewer app ./meeting.pml
+  protoparser associate
+  protowebviewer ./meeting.pml
   protoparser -vv -output=notes Meeting.pml json
   protoparser --listMacros ./macros
   protoparser --macroHelp ./macros/finance/f_entry.pml

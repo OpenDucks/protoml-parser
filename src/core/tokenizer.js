@@ -1,9 +1,21 @@
 const path = require("path")
 const { stripInlineComment } = require("./commentUtils")
+const { extractInlineMacroBlocks } = require("./macroDefinition")
 
 function tokenize(text) {
-  const lines = text.split(/\r?\n/);
+  const extracted = extractInlineMacroBlocks(text);
+  const lines = extracted.cleanedText.split(/\r?\n/);
   const tokens = [];
+
+  for (const entry of extracted.macros) {
+    tokens.push({
+      type: "inlineMacro",
+      raw: entry.raw,
+      line: entry.line,
+      definition: entry.definition,
+      error: entry.error,
+    });
+  }
 
   for (let i = 0; i < lines.length; i++) {
     const raw = stripInlineComment(lines[i]).trim();
@@ -67,6 +79,32 @@ function tokenize(text) {
       if (match) {
         tokens.push({
           type: "tagsImport",
+          file: match[1],
+          raw,
+          line,
+        });
+        continue;
+      }
+    }
+
+    if (raw.startsWith("@participants_import ")) {
+      const match = raw.match(/^@participants_import\s+"(.+?)"$/);
+      if (match) {
+        tokens.push({
+          type: "participantsImport",
+          file: match[1],
+          raw,
+          line,
+        });
+        continue;
+      }
+    }
+
+    if (raw.startsWith("@macros_import ")) {
+      const match = raw.match(/^@macros_import\s+"(.+?)"$/);
+      if (match) {
+        tokens.push({
+          type: "macrosImport",
           file: match[1],
           raw,
           line,

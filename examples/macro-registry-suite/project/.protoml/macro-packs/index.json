@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "packages": [
+    {
+      "name": "contract-kit",
+      "version": "1.0.0",
+      "registry": "registry",
+      "installed_path": ".protoml/macro-packs/contract-kit"
+    },
+    {
+      "name": "base-kit",
+      "version": "1.0.0",
+      "registry": "registry",
+      "installed_path": ".protoml/macro-packs/base-kit"
+    }
+  ]
+}

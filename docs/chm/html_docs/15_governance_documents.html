@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Governance Documents - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Governance Documents</h1>
+        <p>ProtoML is not limited to lightweight notes. It also supports more controlled documents with metadata, approvals, references, and lifecycle tracking.</p>
+        <h2>Core governance metadata</h2>
+        <ul>
+          <li><code>@author</code></li>
+          <li><code>@version</code></li>
+          <li><code>@status</code></li>
+          <li><code>@record_id</code></li>
+          <li><code>@confidentiality</code></li>
+          <li><code>@effective_date</code></li>
+          <li><code>@valid_until</code></li>
+          <li><code>@review_date</code></li>
+        </ul>
+        <h2>Approval and signature structures</h2>
+        <pre><code>@signatures
+=lead:Jane Doe,Project Lead,18.04.2026,Signed digitally
+
+@approvals
+=security:Security Review,approved,Jane Doe,18.04.2026,Reviewed and accepted</code></pre>
+        <p>These let you separate reusable governance data from the final meeting or document narrative.</p>
+        <h2>Embedding governance elements in the reader-facing document</h2>
+        <pre><code>@@signature=lead
+@@approval=security
+@@ref=meta:record_id</code></pre>
+        <h2>Supporting sections</h2>
+        <ul>
+          <li><code>@references</code> for source material or governing documents</li>
+          <li><code>@attachments</code> for linked artifacts</li>
+          <li><code>@tasks</code> for open remediation or follow-up actions</li>
+        </ul>
+        <h2>Why governance metadata matters</h2>
+        <p>Once documents are reviewed, approved, versioned, or periodically revisited, their lifecycle becomes just as important as their prose. ProtoML's governance fields help keep that lifecycle explicit and machine-readable.</p>
+        <h2>Recommended directory workflow</h2>
+        <ol>
+          <li>Standardize required metadata for the document class</li>
+          <li>Keep signatures and approvals in dedicated blocks</li>
+          <li>Use stable <code>@record_id</code> values</li>
+          <li>Run <code>protoparser register "&lt;dir&gt;" statistics</code> across the collection</li>
+          <li>Review overdue or incomplete documents using register output</li>
+        </ol>
+        <h2>Good use cases</h2>
+        <ul>
+          <li>Release approvals</li>
+          <li>Operational procedures</li>
+          <li>Compliance and audit records</li>
+          <li>Policy documents with periodic review requirements</li>
+          <li>Controlled onboarding or access review documents</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="07_authoring_guide.html">Authoring Guide</a></li>
+          <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
+          <li><a href="13_macro_security_trust_model.html">Macro Security And Trust Model</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

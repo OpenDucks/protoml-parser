@@ -10,6 +10,25 @@ This repository contains:
 - the Electron viewer
 - bundled macros
 
+## Documentation
+
+ProtoML now has two documentation layers:
+
+- orienting CHM guide pages in `docs/chm/html_docs/`
+- topic-by-topic built-in help in `docs/*.pml` for `protoparser --docs <topic>`
+
+Recommended reading order for new users:
+
+1. [Documentation Index](docs/chm/toc.html)
+2. [Quick Start](docs/chm/html_docs/02_quick_start.html)
+3. [ProtoML Concepts](docs/chm/html_docs/06_concepts.html)
+4. [Authoring Guide](docs/chm/html_docs/07_authoring_guide.html)
+5. [Macros Guide](docs/chm/html_docs/04_macros_guide.html)
+6. [CLI Reference](docs/chm/html_docs/03_cli_workflows.html)
+7. [Own Macro Registry Guide](docs/chm/html_docs/08_macro_registry_guide.html)
+8. [Macro Security And Trust Model](docs/chm/html_docs/13_macro_security_trust_model.html)
+9. [Validation And Analysis Workflows](docs/chm/html_docs/14_validation_and_analysis_workflows.html)
+
 ## Installation
 
 From source:
@@ -43,6 +62,7 @@ Typical ProtoML releases are structured into three deliverables:
 
 During release preparation, the distributable artifacts are collected in `dist/`.
 That directory is intended to contain the Windows and Linux executables, a copied `protoml-help.chm`, and a `SHA256SUMS.txt` checksum file for the release set.
+The checksum file also records the UTC generation timestamp.
 
 ## Path Recommendation
 
@@ -122,6 +142,8 @@ protoparser tags "examples/feature-suite/_workflow_tags.pml" statistics
 
 `main_demo.pml` loads the imported `.pml`, the imported `.html`, shared tag files, and macros.
 The tag statistics command can be run against either shared tag file in the feature suite because the tag files are cross-referenced via `@tags_import`.
+
+For a guided step-by-step walkthrough, see [docs/chm/html_docs/02_quick_start.html](docs/chm/html_docs/02_quick_start.html).
 
 ## Concepts
 
@@ -304,7 +326,32 @@ Structured references with `@@ref=...` can resolve specific fields:
 
 ## Imports
 
-ProtoML supports shared tags and content imports.
+ProtoML supports shared participants, shared tags, macro registration imports, and content imports.
+
+### Participant imports
+
+`@participants_import "file.pml"` loads participants from another ProtoML file.
+
+Example:
+
+```plaintext
+@participants_import "_participants.pml"
+```
+
+Example shared participant file:
+
+```plaintext
+@participants
+=lead:John Doe,jdoe,jdoe@example.com
+=review:Jane Doe
+```
+
+Rules:
+
+- imported participants are merged into the current document
+- local participants override imported participants with the same ID
+- imported participants can be reused in `@tasks` via `@ptp=id`
+- imported participants can be referenced with `@@ref=participants:id:field`
 
 ### Tag imports
 
@@ -384,9 +431,26 @@ For `pml` imports:
 - `meta`, `participants`, `subjects`, `tags`, `macros`, and `imports` are merged into the main AST
 - the imported `@meeting` content is inserted where `@@import=...` or `@@output=...` appears
 
+### Which `@...` commands are importable?
+
+Commands currently intended for reuse across files are:
+
+- `@import ...` for named content reuse inside `@meeting`
+- `@tags_import ...` for shared task tags
+- `@participants_import ...` for shared participant lists
+- `@macros_import ...` for shared macro registrations
+- `@macro ...` for registering external macro files
+
+Notes:
+
+- `@new_macro` is not imported directly into another document
+- `@new_macro` can now also be written inline in a normal `.pml` file
+- instead, a `.pml` file that starts with `@new_macro` is referenced through `@macro ...`
+- there is no separate `@participant` command; participants are declared inside the `@participants` block
+
 ## Macros
 
-Macros are external ProtoML files with a `=name:` and `=template:` section.
+Macros can be defined in external ProtoML files or inline inside a normal `.pml` document via `@new_macro`.
 
 Register a macro:
 
@@ -421,7 +485,9 @@ Notes:
 
 - macros are primarily intended for HTML rendering
 - macro templates may contain HTML and JavaScript
-- JavaScript is not sanitized, so untrusted macro files should not be used
+- plain HTML alone is not an automatic trust failure
+- JavaScript and external URLs are treated as untrusted by the trust checker
+- detached signatures are stored in `*.sig.json` sidecar files
 
 ## Signatures And Approvals
 
@@ -613,10 +679,18 @@ protoparser analyze "test.pml" graph
 protoparser analyze "test.pml" html
 protoparser register "examples/feature-suite" statistics
 protoparser bundle "test.pml"
+protoparser macro_install init
+protoparser macro_install init_registry "./my-registry"
+protoparser macro_install init_pack "legal-pack" "./my-registry"
+protoparser macro_install add_registry "./my-registry"
+protoparser macro_install install "legal-pack"
 protoparser validate "test.pml"
 protoparser macros "test.pml"
 protoparser scaffold meeting "./demo"
 protoparser init "./project"
+protoparser chm
+protoparser chm path
+protoparser chm download
 protoparser --listMacros "{{macro_dir}}"
 protoparser --macroHelp "{{macro_dir}}/finance/f_entry.pml"
 protoparser --listMacrosJson "{{macro_dir}}"
@@ -675,6 +749,8 @@ Supported graph views:
 - `tags`
 
 If `-output=...` is set for `graph`, the Mermaid-compatible graph output is written as a `.mmd` file instead of being printed to stdout.
+The `.mmd` file is Mermaid source, so open it in Mermaid-capable software such as the Mermaid Live Editor if you want to inspect or edit it directly.
+When `-output=...` is used, ProtoML also writes a companion `.html` preview next to the `.mmd` file for direct browser visualization.
 
 ### Register
 
@@ -715,6 +791,42 @@ protoparser bundle "test.pml"
 
 This writes `test-bundle.pml`.
 
+### External macro packs
+
+Project-local external macro pack workflows are available via:
+
+```bash
+protoparser macro_install init
+protoparser macro_install init_registry "./my-registry"
+protoparser macro_install init_pack "legal-pack" "./my-registry"
+protoparser macro_install add_registry "./my-registry"
+protoparser macro_install install "legal-pack"
+protoparser macro_install search "legal-pack"
+protoparser macro_install list
+protoparser macro_install info "legal-pack"
+protoparser macro_install remove "legal-pack"
+```
+
+This creates and uses:
+
+- `protoml.macros.json` as the project definition file
+- `.protoml/macro-packs/` as the local install directory
+- `.protoml/macro-packs/macros.index.pml` as the generated macro import index
+- `protoml.registry.json` as a local registry file
+- `protoml-pack.json` as a pack manifest
+
+Dependencies declared in `protoml-pack.json` are resolved during `macro_install sync`.
+If a dependency does not specify a registry explicitly, the current registry is used.
+If a requested package version is no longer available in the registry, `macro_install sync` falls back to the newest available registry version and updates the project package entry to match.
+
+Use the generated index in a document with:
+
+```plaintext
+@macros_import ".protoml/macro-packs/macros.index.pml"
+```
+
+The generated index works as a single project-local macro entry point and contains `@macro ...` declarations for all installed pack macros.
+
 ### Validation
 
 Document validation is available via:
@@ -731,8 +843,24 @@ The validation commands check for:
 - unresolved references in strict mode
 - duplicate IDs in common blocks
 - missing tag source files
+- untrusted used macros or imported `.pml` files
 
 With `-v`, validation also reports what was detected in the file, such as meta keys, present blocks, counts, imports, tag imports, and macros.
+
+Dedicated trust inspection is available via:
+
+```bash
+protoparser trust "test.pml"
+protoparser validate "test.pml" -trust=strict -trustRegistry="./my-registry"
+protoparser sign macro "./macros/warn_box.pml" "./keys/alice-private.pem" "Alice" alice-main
+protoparser verify macro "./macros/warn_box.pml" -trustRegistry="./my-registry"
+```
+
+The trust model is intentionally lightweight:
+
+- `trusted`: valid signature by a trusted registry author and no hard risk flags
+- `unknown`: unsigned or not registry-matched, but no hard risk flag
+- `untrusted`: invalid signature, untrusted author, JavaScript, external URLs, or imported untrusted content
 
 ### Macro usage
 
@@ -765,6 +893,16 @@ protoparser init "[target_dir]"
 - `_tags.pml`
 - `meetings/main.pml`
 
+### Windows `.pml` association
+
+On Windows you can associate `.pml` files with ProtoML so they stop opening in Process Monitor:
+
+```bash
+protoparser associate
+```
+
+This writes a per-user file association in `HKCU\Software\Classes` and opens `.pml` files with the ProtoML viewer workbench.
+
 ### CLI options
 
 | Flag | Description |
@@ -772,6 +910,7 @@ protoparser init "[target_dir]"
 | `-v`, `-vv`, `-vvv` | Set verbosity level |
 | `-output=<filename>` | Set output base name without extension |
 | `-theme=<name>` | Set HTML or PDF theme |
+| `-hideMeta` | Hide metadata sections in rendered HTML, Markdown, Text, and PDF output |
 | `-strict` | Fail on unresolved references or missing imports |
 | `--help` | Show CLI help |
 | `--version` | Show version and build number |
@@ -780,6 +919,33 @@ protoparser init "[target_dir]"
 | `--listMacrosJson <dir>` | Output macro metadata as JSON |
 | `--listDocs` | List bundled documentation topics |
 | `--docs <name>` | Show a documentation topic from `docs/` |
+
+### CHM help
+
+ProtoML help is available independently of Windows CHM support via the generated HTML help viewer:
+
+```bash
+protoparser chm
+```
+
+Useful variants:
+
+```bash
+protoparser chm browser
+protoparser chm path
+protoparser chm compiled
+protoparser chm compiled_path
+protoparser chm download
+```
+
+Behavior:
+
+- `protoparser chm` opens the integrated Electron help viewer with TOC and generated HTML docs
+- `protoparser chm browser` opens the same help viewer in the system browser
+- `protoparser chm path` prints the generated HTML help viewer path
+- `protoparser chm compiled` opens the native `.chm` file on Windows if available
+- `protoparser chm compiled_path` prints the resolved compiled CHM path
+- `protoparser chm download` downloads the compiled CHM asset without opening it
 
 Verbosity levels for text-based CLI commands such as `validate`, `tags ... statistics`, `analyze ... statistics`, `register ... statistics`, and `macros`:
 
@@ -820,6 +986,8 @@ Notes:
 - the `markdown` and `text` renderers create readability-focused exports and strip embedded CSS and JavaScript from macro-heavy meeting content
 - `markdown` is written as `.md`
 - `text` is written as `.txt`
+- HTML and PDF themes can be selected with `-theme=<name>` or via document meta such as `@theme:dark`
+- rendered metadata can be hidden with `-hideMeta` or document meta such as `@hide_meta:true`
 
 Common AST fields:
 
@@ -843,9 +1011,22 @@ protoviewer test.pml
 protoviewer test.pml dark
 ```
 
+### Independent viewer
+
+The browser-based viewer can be opened via:
+
+```bash
+protoparser viewer
+protoparser viewer browser "./test.pml"
+protoparser viewer app "./test.pml"
+protowebviewer "./test.pml"
+```
+
+Use `protoparser viewer` when you want the browser and app workbench for authoring, rendering, and lightweight checks, while CHM remains the bundled Help/Docs experience on Windows.
+
 ### Web parser
 
-The browser demo lives in `web/`.
+The independent browser viewer lives in `web/`.
 
 Open:
 
@@ -864,6 +1045,14 @@ Start a local development server:
 ```bash
 npm run dev
 ```
+
+The browser viewer supports:
+
+- editing ProtoML directly in the browser
+- loading local `.pml` files
+- drag and drop
+- in-browser preview
+- exporting the rendered HTML
 
 ## Development
 
@@ -886,6 +1075,19 @@ npm run build:exe
 ### Native Windows Help
 
 The repository includes a native Windows HTML Help project in `docs/chm/`.
+
+If you just want to use the help locally on Windows, run:
+
+```bash
+protoparser chm
+```
+
+If you want to compile the CHM on your own machine, you need Microsoft HTML Help Workshop installed first.
+An archived installer is still available here:
+
+```text
+https://web.archive.org/web/20160201063255/http://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe
+```
 
 Use:
 

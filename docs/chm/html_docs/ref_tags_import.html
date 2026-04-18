@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Tags Import - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Tags Import</h1>
+<div class="topic-meta">Topic: <code>tags_import</code></div>
+<h2>Explanation</h2>
+<p>The <code>@tags_import</code> command includes an external <code>.pml</code> tag definition file (e.g., <code>tags.pml</code>) into the current ProtoML document.</p>
+<p>Tags imported this way can be referenced in the <code>@tasks</code> section via <code>@tag=id</code>.</p>
+<p>The external file should start with <code>@tags</code> and contain <code>=id:Description</code> pairs.</p>
+<p>The import path should be wrapped in double quotes.</p>
+<h2>Examples</h2>
+<pre><code>@tags_import &quot;tags.pml&quot;</code></pre>
+  </main>
+</body>
+</html>

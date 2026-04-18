@@ -1,5 +1,6 @@
 const {
   convertHtmlToMarkdown,
+  getVisibleMetaEntries,
   isProbablyHtml,
   renderStructuredReference,
   renderTemplate,
@@ -21,7 +22,7 @@ function renderMeetingLine(line) {
   return isProbablyHtml(source) ? convertHtmlToMarkdown(source) : stripHtml(source);
 }
 
-function renderMarkdown(ast) {
+function renderMarkdown(ast, options = {}) {
   const lines = [];
   const title = renderTemplate(
     ast.meta?.protocol || "Protocol - {{date}}",
@@ -35,9 +36,7 @@ function renderMarkdown(ast) {
   lines.push(`# ${stripHtml(title)}`);
   lines.push("");
 
-  const metaEntries = Object.entries(ast.meta || {}).filter(([key]) =>
-    !["protocol", "meeting_title", "title"].includes(key)
-  );
+  const metaEntries = getVisibleMetaEntries(ast, options);
 
   if (metaEntries.length) {
     lines.push("## Meta");

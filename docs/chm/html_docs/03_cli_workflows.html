@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CLI Reference - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>CLI Reference</h1>
+        <p>ProtoML currently exposes these main binaries: <code>protoml-parser</code>, <code>protoparser</code>, <code>protoml-viewer</code>, and <code>protoviewer</code>.</p>
+        <h2>Main syntax</h2>
+        <pre><code>protoparser [options] &lt;filename&gt; &lt;format&gt;
+protoparser [options] &lt;filename&gt; &lt;format&gt; &lt;output_dir&gt;</code></pre>
+        <h2>Main render formats</h2>
+        <pre><code>protoparser "test.pml" html
+protoparser "test.pml" pdf
+protoparser "test.pml" json
+protoparser "test.pml" markdown
+protoparser "test.pml" text</code></pre>
+        <p>Most users should think of these as three classes of outputs: reader-facing rich output, archival/static output, and machine-readable output.</p>
+        <h2>Analysis and validation</h2>
+        <pre><code>protoparser validate "test.pml"
+protoparser tags "_tags.pml" validate
+protoparser tags "_tags.pml" statistics
+protoparser macros "test.pml"
+protoparser trust "test.pml"
+protoparser analyze "test.pml" statistics
+protoparser analyze "test.pml" graph
+protoparser register "meetings" statistics
+protoparser bundle "test.pml"</code></pre>
+        <p>These commands are where ProtoML stops being just a renderer and starts acting like a document system. They let you inspect structure, governance metadata, tag usage, macro usage, import relationships, and document trust state.</p>
+        <p><code>register</code> here means a governance report over document folders. It is separate from macro registries and the <code>macro_install ..._registry</code> commands used for external macro packs.</p>
+        <h2>Project and packaging commands</h2>
+        <pre><code>protoparser scaffold meeting "./demo"
+protoparser init "./project"</code></pre>
+        <p>Use these when you want a repeatable starting structure instead of hand-creating the first files.</p>
+        <h2>Macro commands</h2>
+        <pre><code>protoparser --listMacros "{{macro_dir}}"
+protoparser --macroHelp "{{macro_dir}}/finance/f_entry.pml"
+protoparser --listMacrosJson "{{macro_dir}}"</code></pre>
+        <p>These are especially useful when a team wants to discover what is already bundled before inventing new macros.</p>
+        <h2>Documentation commands</h2>
+        <pre><code>protoparser --listDocs
+protoparser --docs meeting
+protoparser chm
+protoparser chm path
+protoparser chm download</code></pre>
+        <p>The built-in docs help with precise topic lookup, while the CHM guides are better for learning and orientation.</p>
+        <h2>Trust and signing commands</h2>
+        <pre><code>protoparser trust "test.pml"
+protoparser sign macro "./macros/warn_box.pml" "./keys/alice-private.pem" "Alice" alice-main
+protoparser verify macro "./macros/warn_box.pml" -trustRegistry="./my-registry"</code></pre>
+        <p>These commands provide the lightweight trust workflow: static risk checks, detached signatures, and author trust lookup via registry sources.</p>
+        <h2>Useful options</h2>
+        <ul>
+          <li><code>-v</code>, <code>-vv</code>, <code>-vvv</code> for verbosity on text-style reports</li>
+          <li><code>-theme=&lt;name&gt;</code> for HTML and PDF themes</li>
+          <li><code>-strict</code> for stricter validation behavior</li>
+          <li><code>-trust=off|warn|strict</code> and <code>-trustRegistry=...</code> for trust enforcement and author lookup</li>
+          <li><code>-graphView=&lt;mode&gt;</code> and <code>-graphDirection=&lt;dir&gt;</code> for graph rendering</li>
+        </ul>
+        <h2>Common workflow patterns</h2>
+        <ul>
+          <li>Authoring loop: <code>protoviewer</code> or <code>protoparser "...pml" html</code></li>
+          <li>Quality loop: <code>validate</code>, <code>analyze</code>, and <code>macros</code></li>
+          <li>Governance loop: <code>register "&lt;dir&gt;" statistics</code></li>
+          <li>Packaging loop: <code>bundle</code> for a single-file archive form</li>
+        </ul>
+        <h2>Verbosity</h2>
+        <ul>
+          <li><code>-v</code> adds a compact structural overview</li>
+          <li><code>-vv</code> adds deeper lists and nested detail</li>
+          <li><code>-vvv</code> adds the most verbose diagnostics available for the command</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="10_outputs_and_rendering.html">Outputs And Rendering</a></li>
+          <li><a href="09_viewer_guide.html">Viewer Guide</a></li>
+          <li><a href="05_windows_help_and_dev.html">Windows Help And Development</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { getVisibleMetaEntries } = require("./renderUtils");
 
 function loadTheme(themeName, skip = 0) {
   if (skip) {
@@ -50,7 +51,8 @@ function toCssIdentifier(value) {
 }
 
 function renderHTML(ast, options = {}) {
-  const css = loadTheme(options.theme, options.skipTheme);
+  const effectiveTheme = options.theme || ast.meta?.theme || "default";
+  const css = loadTheme(effectiveTheme, options.skipTheme);
   const protocolTitle = renderTemplate(
     ast.meta?.protocol || "Protocol - {{date}}",
     {
@@ -147,9 +149,7 @@ function renderHTML(ast, options = {}) {
     html.push(`</ul></section>`);
   }
 
-  const metaEntries = Object.entries(ast.meta || {}).filter(([key]) =>
-    !["protocol", "meeting_title", "title"].includes(key)
-  );
+  const metaEntries = getVisibleMetaEntries(ast, options);
 
   if (metaEntries.length) {
     html.push(`<section><h2>Meta</h2><ul>`);
@@ -211,3 +211,4 @@ function renderHTML(ast, options = {}) {
 }
 
 module.exports = renderHTML;
+module.exports.loadTheme = loadTheme;
