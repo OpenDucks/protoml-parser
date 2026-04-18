@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Verify - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Verify</h1>
+<div class="topic-meta">Topic: <code>verify</code></div>
+<h2>Explanation</h2>
+<p><code>protoparser verify &lt;macro|pml&gt; &lt;file&gt;</code> verifies the detached signature for a macro or a ProtoML document.</p>
+<p>Verification happens in two layers:</p>
+<ul>
+<li>cryptographic verification of the sidecar signature</li>
+<li>optional author trust lookup against one or more trust registries</li>
+</ul>
+<p>Without a registry source, ProtoML can still verify whether the file matches its signature. With <code>-trustRegistry=...</code>, it can also classify the author as <code>trusted</code>, <code>untrusted</code>, or <code>unknown</code>.</p>
+<p>For bundled built-in macros, trust can also come from the built-in hash manifest even when no detached signature exists. <code>verify</code> still reports detached-signature state explicitly, so a built-in macro may be trusted by origin while still showing a missing signature sidecar.</p>
+<p>Detached sidecar workflow outside a registry:</p>
+<p>Author side:</p>
+<ul>
+<li>sign the macro or document and distribute the <code>*.sig.json</code> file together with the original file</li>
+<li>give users the public key through a separate documented channel</li>
+</ul>
+<p>User side:</p>
+<ul>
+<li>verify the file with <code>protoparser verify ...</code></li>
+<li>use the result as cryptographic integrity/authorship evidence</li>
+<li>if there is no trust registry, the result proves the file matches the signature, but it does not elevate the author to <code>trusted</code></li>
+</ul>
+<h2>Examples</h2>
+<pre><code>protoparser verify macro &quot;./macros/warn_box.pml&quot;
+protoparser verify macro &quot;./macros/warn_box.pml&quot; -trustRegistry=&quot;./my-registry&quot;
+protoparser verify pml &quot;./meetings/board.pml&quot; -trustRegistry=&quot;https://example.org/protoml.registry.json&quot;
+protoparser verify macro &quot;./shared/warn_box.pml&quot;</code></pre>
+  </main>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Validate - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Validate</h1>
+<div class="topic-meta">Topic: <code>validate</code></div>
+<h2>Explanation</h2>
+<p><code>protoparser validate &lt;pml_file&gt;</code> validates a ProtoML document without rendering it.</p>
+<p>The command checks for missing files, unresolved references in strict mode, duplicate IDs in common blocks, invalid imports or macro files, and trust issues for used macros or imported ProtoML files. With <code>-v</code>, it also prints a compact overview of detected metadata, blocks, imports, tag imports, and registered macros. <code>-vv</code> adds deeper detail lists, and <code>-vvv</code> shows the most verbose diagnostic output for the command.</p>
+<p>Trust behavior:</p>
+<ul>
+<li><code>-trust=warn</code> keeps rendering-style behavior and reports untrusted macros as warnings</li>
+<li><code>-trust=strict</code> upgrades trust violations to errors</li>
+<li><code>-trustRegistry=...</code> adds local or remote author trust sources</li>
+</ul>
+<p>Unsigned but otherwise harmless macros are treated as <code>unknown</code>, not as immediate failures.</p>
+<p>It is recommended to wrap the file path in double quotes.</p>
+<h2>Examples</h2>
+<pre><code>protoparser validate &quot;Meeting.pml&quot;
+protoparser -v validate &quot;Meeting.pml&quot;
+protoparser validate &quot;Meeting.pml&quot; -trust=strict -trustRegistry=&quot;./my-registry&quot;
+protoparser tags &quot;_tags.pml&quot; validate</code></pre>
+  </main>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Analyze - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Analyze</h1>
+<div class="topic-meta">Topic: <code>analyze</code></div>
+<h2>Explanation</h2>
+<p><code>protoparser analyze &lt;pml_file&gt; &lt;format&gt;</code> performs general cross-reference analysis for <code>.pml</code> files.</p>
+<p>It can report local stats, resolved stats, imported <code>.pml</code> and <code>.html</code> files, tag imports, macros, and recursive reference trees.</p>
+<p>Supported formats are <code>statistics</code>, <code>json</code>, <code>html</code>, <code>pdf</code>, and <code>graph</code>.</p>
+<p>It is recommended to wrap the file path in double quotes.</p>
+<h2>Examples</h2>
+<pre><code>protoparser analyze &quot;Meeting.pml&quot; statistics
+protoparser analyze &quot;Meeting.pml&quot; graph</code></pre>
+  </main>
+</body>
+</html>

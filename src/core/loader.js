@@ -4,6 +4,7 @@ const { tokenize } = require("./tokenizer")
 const { parseBlocks } = require("./blockParser")
 const { resolveMacroPath } = require("../cli/options")
 const { BUILTIN_META_KEYS } = require("./metaKeys")
+const { parseMacroDefinition } = require("./macroDefinition")
 
 function resolveMacroFilePath(basePath, file) {
   const projectMacroBase = path.resolve(__dirname, "..", "..", "macros")
@@ -71,6 +72,27 @@ function mergeImportedAst(mainAst, importedAst) {
 function loadAndMergeImports(mainAst, basePath, options = {}) {
   if (!mainAst || typeof mainAst !== "object") return mainAst
 
+  const participantImports = findParticipantImports(mainAst)
+
+  for (const importFile of participantImports) {
+    const fullPath = path.resolve(basePath, importFile)
+
+    if (!fs.existsSync(fullPath)) {
+      if (options.strict) throw new Error(`Import file not found: ${fullPath}`)
+      continue
+    }
+
+    const raw = fs.readFileSync(fullPath, "utf8")
+    const tokens = tokenize(raw)
+    const importedAst = parseBlocks(tokens, options)
+
+    if (importedAst.participants) {
+      mainAst.participants = { ...importedAst.participants, ...mainAst.participants }
+    } else if (options.strict) {
+      throw new Error(`Participant import does not define an @participants block: ${fullPath}`)
+    }
+  }
+
   const tagImports = findTagImports(mainAst)
 
   for (const importFile of tagImports) {
@@ -134,38 +156,54 @@ function findTagImports(ast) {
   return Array.isArray(ast.tags_import) ? ast.tags_import : [ast.tags_import]
 }
 
-const macroCache = {}
+function findParticipantImports(ast) {
+  if (!ast || !ast.participants_import) return []
+  return Array.isArray(ast.participants_import) ? ast.participants_import : [ast.participants_import]
+}
+
+function findMacroImports(ast) {
+  if (!ast || !ast.macros_import) return []
+  return Array.isArray(ast.macros_import) ? ast.macros_import : [ast.macros_import]
+}
 
 function loadAndMergeMacros(ast, basePath, options = {}) {
-  if (!ast.macros) return ast
+  const macroCache = { ...(ast._macroCache || {}) }
+  const macroImports = findMacroImports(ast)
+  for (const importFile of macroImports) {
+    const fullPath = path.resolve(basePath, importFile)
+
+    if (!fs.existsSync(fullPath)) {
+      if (options.strict) throw new Error(`Macro import file not found: ${fullPath}`)
+      continue
+    }
+
+    const importedTokens = tokenize(fs.readFileSync(fullPath, "utf8"))
+    const importedAst = parseBlocks(importedTokens, options)
+
+    if (importedAst.macros) {
+      ast.macros = { ...(importedAst.macros || {}), ...(ast.macros || {}) }
+    } else if (options.strict) {
+      throw new Error(`Macro import does not define any @macro entries: ${fullPath}`)
+    }
+  }
+
+  for (const [name, entry] of Object.entries(ast.inline_macros || {})) {
+    if (entry?.template) {
+      macroCache[name] = entry.template
+    }
+  }
+
+  if (!ast.macros && !Object.keys(ast.inline_macros || {}).length) return ast
 
   for (const name in ast.macros) {
     const file = ast.macros[name]
     const fullPath = resolveMacroFilePath(basePath, file)
 
     if (!fs.existsSync(fullPath)) continue
-    const lines = fs.readFileSync(fullPath, "utf8").split(/\r?\n/)
+    const parsedMacro = parseMacroDefinition(fs.readFileSync(fullPath, "utf8"))
 
-    let macroName = null
-    let templateLines = []
-    let inTemplate = false
-
-    for (const line of lines) {
-      if (line.startsWith("=name:")) {
-        macroName = line.slice(6).trim()
-      } else if (line.startsWith("=template:")) {
-        inTemplate = true
-        const rest = line.slice(10).trim()
-        if (rest) templateLines.push(rest)
-      } else if (inTemplate && (line.startsWith("@") || line.startsWith("="))) {
-        inTemplate = false
-      } else if (inTemplate) {
-        templateLines.push(line)
-      }
-    }
-
-    if (macroName && templateLines.length) {
-      macroCache[macroName] = templateLines.join("\n")
+    if (parsedMacro?.name && parsedMacro.template) {
+      macroCache[parsedMacro.name] = parsedMacro.template
     }
   }
 

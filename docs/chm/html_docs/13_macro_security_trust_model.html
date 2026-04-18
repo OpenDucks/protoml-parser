@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Macro Security And Trust Model - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Macro Security And Trust Model</h1>
+        <p>ProtoML macros are still the highest-trust extension surface in the system, but the trust workflow is now formalized so teams can inspect, sign, and classify them without building a heavy PKI layer into every document.</p>
+        <h2>Three separate concepts</h2>
+        <ul>
+          <li><strong>Risk flags</strong>: what the macro actually does, such as JavaScript or external URLs</li>
+          <li><strong>Signature status</strong>: whether the file matches a detached signature sidecar</li>
+          <li><strong>Author trust</strong>: whether the signing author is marked trusted or untrusted in a registry</li>
+        </ul>
+        <p>ProtoML combines these into one <code>effective trust</code> value instead of mixing the concepts together.</p>
+        <h2>Effective trust levels</h2>
+        <ul>
+          <li><code>trusted</code>: valid signature by a trusted author, or a bundled built-in macro that matches the shipped hash manifest, and no hard risk violations</li>
+          <li><code>unknown</code>: no signature or no trusted registry author match, but also no hard risk violation</li>
+          <li><code>untrusted</code>: invalid signature, untrusted author, JavaScript, external URLs, or imported untrusted content</li>
+        </ul>
+        <h2>Important simplification</h2>
+        <p>Plain HTML by itself is not treated as an automatic trust failure anymore. Macros are HTML-oriented by design, so HTML is only tracked as a capability flag. The hard downgrade conditions are JavaScript and external URLs.</p>
+        <p>Bundled built-in macros are identified by their real file location and a shipped hash manifest, not just by writing <code>{{macro_dir}}</code> in the document. That prevents newly dropped files in the built-in directory from becoming trusted automatically.</p>
+        <h2>How to read common trust outcomes</h2>
+        <ul>
+          <li>Bundled built-in macro plus matching shipped hash and no hard risk flag: usually <code>trusted</code></li>
+          <li>Bundled built-in macro with JavaScript or external URLs: still <code>untrusted</code></li>
+          <li>Normal local custom macro without signatures: usually <code>unknown</code></li>
+          <li>Signed custom macro with trusted registry author and no hard risk flag: <code>trusted</code></li>
+          <li>Imported <code>.pml</code> file without trust information: usually <code>unknown</code></li>
+        </ul>
+        <h2>Detached signatures instead of inline syntax</h2>
+        <p>Macros and <code>.pml</code> files are signed via detached sidecars such as <code>warning.pml.sig.json</code>. This keeps ProtoML syntax clean and lets the same signing flow work for macros and full documents.</p>
+        <pre><code>protoparser sign macro "./macros/warn_box.pml" "./keys/alice-private.pem" "Alice" alice-main
+protoparser verify macro "./macros/warn_box.pml" -trustRegistry="./my-registry"</code></pre>
+        <h2>Detached sidecars outside a registry</h2>
+        <p>The detached <code>*.sig.json</code> format also works without any registry at all.</p>
+        <p>Author side:</p>
+        <ul>
+          <li>sign the macro or document</li>
+          <li>distribute the original file and the generated <code>*.sig.json</code> together</li>
+          <li>share the public key through a documented channel</li>
+        </ul>
+        <p>User side:</p>
+        <ul>
+          <li>keep the file and sidecar together</li>
+          <li>run <code>protoparser verify ...</code> to verify integrity and authorship cryptographically</li>
+          <li>use a trust registry only if the author should also resolve to <code>trusted</code> or <code>untrusted</code></li>
+        </ul>
+        <p>Without a registry, signed content can still be verified, but it typically remains <code>unknown</code> rather than <code>trusted</code>.</p>
+        <h2>Registry author model</h2>
+        <p>The registry is used as an author trust directory, not as a sandbox. It can declare authors and their public keys, plus package metadata for discovery.</p>
+        <pre><code>{
+  "version": 1,
+  "authors": [
+    {
+      "name": "Alice",
+      "trust": "trusted",
+      "keys": [
+        {
+          "id": "alice-main",
+          "public_key": "-----BEGIN PUBLIC KEY----- ..."
+        }
+      ]
+    }
+  ]
+}</code></pre>
+        <h2>What validation enforces</h2>
+        <ul>
+          <li><code>validate</code> reports untrusted macros and imported <code>.pml</code> files</li>
+          <li><code>-trust=warn</code> warns but allows rendering</li>
+          <li><code>-trust=strict</code> blocks rendering on untrusted macro or imported document trust failures</li>
+          <li><code>unknown</code> content is visible in trust reports, but does not fail by default</li>
+        </ul>
+        <h2>What was intentionally left out</h2>
+        <ul>
+          <li>No popularity or download-count trust scoring</li>
+          <li>No mandatory online lookup for normal local rendering</li>
+          <li>No separate signature syntax inside ProtoML blocks</li>
+        </ul>
+        <p>Those ideas create substantial overhead and unclear semantics. Detached signatures plus author registries give most of the practical value with much less maintenance cost.</p>
+        <h2>Recommended team policy</h2>
+        <ol>
+          <li>Keep signed production macros in version-controlled repositories</li>
+          <li>Publish trusted authors in one internal registry</li>
+          <li>Run <code>protoparser trust</code> and <code>validate -trust=strict</code> in CI for sensitive documents</li>
+          <li>Review any macro that contains JavaScript or external URLs manually</li>
+          <li>Prefer bundled built-in macros for common safe defaults before introducing new custom packs</li>
+        </ol>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="04_macros_guide.html">Macros Guide</a></li>
+          <li><a href="08_macro_registry_guide.html">Own Macro Registry Guide</a></li>
+          <li><a href="15_governance_documents.html">Governance Documents</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "name": "base-kit",
+  "version": "1.0.0",
+  "description": "ProtoML macro pack: base-kit",
+  "author": "",
+  "macros": [
+    "macros/base-kit_sample.pml"
+  ],
+  "themes": [],
+  "dependencies": [],
+  "protoml": ">=1.3.0"
+}

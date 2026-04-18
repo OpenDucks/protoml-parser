@@ -44,9 +44,29 @@ function collectMacroUsage(filename, visited = new Set()) {
   const ast = parseBlocks(tokenize(raw));
   const baseDir = path.dirname(fullPath);
   const used = new Set();
-  const registered = Object.entries(ast.macros || {}).map(([alias, file]) =>
-    getMacroDefinition(baseDir, alias, file)
-  );
+  const importedRegistered = [];
+
+  for (const importFile of Array.isArray(ast.macros_import) ? ast.macros_import : []) {
+    const resolvedImport = path.resolve(baseDir, normalizeFileRef(importFile));
+    if (!fs.existsSync(resolvedImport)) continue;
+    const importedAst = parseBlocks(tokenize(fs.readFileSync(resolvedImport, "utf8")));
+    for (const [alias, file] of Object.entries(importedAst.macros || {})) {
+      importedRegistered.push(getMacroDefinition(path.dirname(resolvedImport), alias, file));
+    }
+  }
+
+  const registered = [
+    ...importedRegistered,
+    ...Object.entries(ast.inline_macros || {}).map(([name, entry]) => ({
+      alias: name,
+      actual_name: name,
+      file: "[inline macro]",
+      path: `${fullPath}:${entry.line || 0}`,
+    })),
+    ...Object.entries(ast.macros || {}).map(([alias, file]) =>
+      getMacroDefinition(baseDir, alias, file)
+    ),
+  ];
 
   for (const line of Array.isArray(ast.meeting) ? ast.meeting : []) {
     const match = String(line).match(/@@macro=([\w-]+):?/);

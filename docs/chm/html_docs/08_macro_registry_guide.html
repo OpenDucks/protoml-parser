@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Own Macro Registry Guide - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Own Macro Registry Guide</h1>
+        <p>This guide shows how to build and maintain your own local ProtoML macro registry, publish packs into it, and consume those packs from a project meeting file.</p>
+        <h2>What this workflow is for</h2>
+        <p>Use a custom macro registry when you want a reusable, curated macro catalog for one team, one company, or one document domain instead of copying macro files between repositories.</p>
+        <p>This guide is about macro package registries only. It is not about <code>protoparser register "&lt;dir&gt;"</code>, which creates governance and status reports for document collections.</p>
+        <h2>Choose the right trust path first</h2>
+        <ul>
+          <li>Use bundled <code>{{macro_dir}}</code> macros first when the shipped macro set already covers the need</li>
+          <li>Use a registry when you need reusable custom packs across multiple projects or teams</li>
+          <li>Use detached signatures plus a registry when your custom macros should resolve to <code>trusted</code></li>
+          <li>Use unsigned local macros only for exploratory work where <code>unknown</code> is acceptable</li>
+        </ul>
+        <h2>Create the registry</h2>
+        <pre><code>protoparser macro_install init_registry "./my-registry"</code></pre>
+        <p>This creates the local registry root and the <code>protoml.registry.json</code> index file.</p>
+        <h2>Create a pack inside the registry</h2>
+        <pre><code>protoparser macro_install init_pack "meeting-kit" "./my-registry"</code></pre>
+        <p>This gives you a pack folder with a <code>protoml-pack.json</code> manifest and a place for the pack's macro files.</p>
+        <h2>Add macros to the pack</h2>
+        <p>Place your custom macro files into the pack and describe the pack in its manifest. A simple macro could look like this:</p>
+        <pre><code>@new_macro
+=name:decisionCard
+=docs:
+Renders a highlighted decision summary.
+=template:
+&lt;div class="decision-card"&gt;
+  &lt;strong&gt;{{title}}&lt;/strong&gt;&lt;br&gt;
+  {{text}}
+&lt;/div&gt;</code></pre>
+        <h2>Add the pack to the registry index</h2>
+        <pre><code>protoparser macro_install registry_add "./my-registry" "./my-registry/packs/meeting-kit"</code></pre>
+        <p>If the pack changes later, refresh the registry entry with:</p>
+        <pre><code>protoparser macro_install registry_update "./my-registry" "./my-registry/packs/meeting-kit"</code></pre>
+        <h2>Connect a project to your registry</h2>
+        <pre><code>protoparser macro_install init
+protoparser macro_install add_registry "./my-registry"</code></pre>
+        <p>This prepares the project-local macro configuration and adds your registry as a source.</p>
+        <h2>Install or sync a pack from the registry</h2>
+        <pre><code>protoparser macro_install add_package "meeting-kit" 1.0.0
+protoparser macro_install sync</code></pre>
+        <p>Or install in one step:</p>
+        <pre><code>protoparser macro_install install "meeting-kit" 1.0.0</code></pre>
+        <p>The project then receives the installed files in <code>.protoml/macro-packs/</code> and a generated <code>macros.index.pml</code>.</p>
+        <h2>Bind the registry macros into a meeting file</h2>
+        <pre><code>@macros_import ".protoml/macro-packs/macros.index.pml"
+@protocol "Architecture Review - {{date}}"
+
+@participants
+=lead:Jane Doe,jdoe,jdoe@example.com
+
+@meeting "Architecture Review"
+# Decisions
+@@macro=decisionCard:title=Storage;text=Use the replicated storage tier</code></pre>
+        <p>This is the meeting-side integration step: the generated macro index exposes the installed macros, and the meeting document uses them with <code>@@macro=...</code>.</p>
+        <h2>Manage installed packs in a project</h2>
+        <ul>
+          <li>List installed packs: <code>protoparser macro_install list</code></li>
+          <li>Inspect a pack: <code>protoparser macro_install info "meeting-kit"</code></li>
+          <li>Change the requested version: <code>protoparser macro_install update_package "meeting-kit" 1.1.0</code></li>
+          <li>Remove the package definition: <code>protoparser macro_install remove_package "meeting-kit"</code></li>
+          <li>Uninstall and remove a pack from the project: <code>protoparser macro_install remove "meeting-kit"</code></li>
+        </ul>
+        <h2>Manage the registry itself</h2>
+        <ul>
+          <li>Add a pack entry: <code>registry_add</code></li>
+          <li>Refresh a changed pack entry: <code>registry_update</code></li>
+          <li>Remove a pack entry: <code>protoparser macro_install registry_remove "./my-registry" "meeting-kit"</code></li>
+        </ul>
+        <p>Removing a pack from the registry index stops future resolution through that registry entry, but existing project installs may still keep local copies until updated or removed.</p>
+        <h2>Signing workflow for registry macros</h2>
+        <p>If you want a registry-delivered macro to become <code>trusted</code> in the ProtoML trust workflow, the macro file itself must be signed and the signing author must be listed in the registry <code>authors</code> section.</p>
+        <pre><code>protoparser sign macro "./my-registry/packs/meeting-kit/macros/meeting_kit_sample.pml" "./keys/alice-private.pem" "Alice" alice-main</code></pre>
+        <p>This creates a detached <code>*.sig.json</code> file next to the macro. The registry then needs a matching trusted author entry:</p>
+        <pre><code>{
+  "version": 1,
+  "name": "my-registry",
+  "authors": [
+    {
+      "name": "Alice",
+      "trust": "trusted",
+      "keys": [
+        {
+          "id": "alice-main",
+          "public_key": "-----BEGIN PUBLIC KEY----- ..."
+        }
+      ]
+    }
+  ],
+  "packages": []
+}</code></pre>
+        <p>After that, consumers can run <code>verify</code> or <code>trust</code> with <code>-trustRegistry=...</code> and the macro can resolve to <code>trusted</code> if it has no hard risk flags such as JavaScript or external URLs.</p>
+        <h2>Recommended trust-aware workflow</h2>
+        <ol>
+          <li>Start with bundled macros when possible</li>
+          <li>Create a custom pack only for the gaps</li>
+          <li>Sign the pack macros before treating them as production-ready</li>
+          <li>Publish the signing authors in the registry <code>authors</code> list</li>
+          <li>Install the pack into the project and check it with <code>trust</code>, <code>verify</code>, or <code>validate -trust=...</code></li>
+          <li>Review JavaScript and external URLs explicitly, even for signed registry macros</li>
+        </ol>
+        <h2>What about built-in macros?</h2>
+        <p>Bundled built-in macros can resolve to <code>trusted</code> without detached sidecars when they match the shipped built-in hash manifest and do not trigger hard risk flags.</p>
+        <p>If built-in macros should participate in the exact same author-signature workflow as external macros, they still need detached signatures and a matching trusted author entry in a documented trust registry. Extra or modified files in the built-in macro directory are not automatically trusted.</p>
+        <h2>Detached sidecar workflow without a registry</h2>
+        <p>Not every signed macro has to live inside a registry.</p>
+        <p>Author side:</p>
+        <ul>
+          <li>sign the standalone macro file with <code>protoparser sign macro ...</code></li>
+          <li>ship the macro together with its <code>*.sig.json</code> sidecar</li>
+          <li>ship the public key through a documented channel</li>
+        </ul>
+        <p>User side:</p>
+        <ul>
+          <li>keep the macro and sidecar together</li>
+          <li>run <code>protoparser verify macro ...</code></li>
+          <li>treat the result as cryptographic verification, not as automatic registry trust</li>
+        </ul>
+        <h2>Remote registries</h2>
+        <p>ProtoML can already use remote registry URLs for discovery, trust lookup, and explicit search. The remote workflow is intentionally simple: the registry is just a JSON document plus reachable pack files behind normal HTTP or HTTPS URLs.</p>
+        <h2>What the registry admin must do</h2>
+        <ol>
+          <li>Host a <code>protoml.registry.json</code> file on a stable HTTP or HTTPS URL</li>
+          <li>Publish each pack at a stable remote location and make sure the registry <code>source</code> and <code>manifest</code> paths point to reachable files</li>
+          <li>Keep package versions immutable once published whenever possible</li>
+          <li>Optionally publish an <code>authors</code> list with trusted or untrusted authors and public keys for trust verification</li>
+          <li>Document whether the registry is public, internal, reviewed, or experimental</li>
+        </ol>
+        <p>A minimal remote registry usually looks like a static website, GitHub Pages site, internal web server, or artifact host that serves JSON and pack files without any special server logic.</p>
+        <h2>What the user must do</h2>
+        <ol>
+          <li>Add the remote registry to the project with <code>protoparser macro_install add_registry "https://example.org/protoml.registry.json"</code> if it should be part of the project config</li>
+          <li>Search it explicitly with <code>protoparser macro_install search "meeting" "https://example.org/protoml.registry.json"</code> if it should only be queried ad hoc</li>
+          <li>Use <code>-trustRegistry=...</code> with <code>trust</code>, <code>verify</code>, or <code>validate -trust=...</code> when the remote registry should also act as an author trust source</li>
+          <li>Review the registry owner and pack maintainers before treating the registry as trusted</li>
+        </ol>
+        <h2>Operational notes</h2>
+        <ul>
+          <li>Remote registries are best for discovery and trust lookup first</li>
+          <li>For controlled environments, teams should still prefer a reviewed internal registry</li>
+          <li>If a remote registry changes frequently, consumers should pin versions in <code>protoml.macros.json</code></li>
+          <li>Trust classification still comes from risk flags, signatures, and author trust, not from the fact that a registry happens to be remote</li>
+        </ul>
+        <h2>Recommended maintenance flow</h2>
+        <ol>
+          <li>Create or edit macros inside a pack</li>
+          <li>Update the pack version when behavior meaningfully changes</li>
+          <li>Refresh the registry entry</li>
+          <li>Update consuming projects and run <code>sync</code></li>
+          <li>Render HTML and verify the macro output in a real document</li>
+        </ol>
+        <h2>Practical advice</h2>
+        <ul>
+          <li>Keep packs focused on one domain such as meetings, approvals, finance, or legal output</li>
+          <li>Prefer semantic macro names that still make sense outside the original project</li>
+          <li>Use a local registry first before introducing remote distribution</li>
+          <li>Inspect the generated project macro index after pack changes</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="04_macros_guide.html">Macros Guide</a></li>
+          <li><a href="03_cli_workflows.html">CLI Reference</a></li>
+          <li><a href="11_examples_cookbook.html">Examples Cookbook</a></li>
+          <li><a href="13_macro_security_trust_model.html">Macro Security And Trust Model</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

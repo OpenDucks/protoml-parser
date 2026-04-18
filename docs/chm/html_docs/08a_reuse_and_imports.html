@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Reuse And Imports Guide - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Reuse And Imports Guide</h1>
+        <p>ProtoML has several reuse mechanisms, and they solve different problems. This guide connects them into one practical workflow so you can choose the right one quickly.</p>
+        <h2>Choose the right reuse tool</h2>
+        <ul>
+          <li><code>@import name "file" pml|html</code> when you want to inject maintained content into the meeting output</li>
+          <li><code>@participants_import "file.pml"</code> when multiple documents should share the same participant roster</li>
+          <li><code>@tags_import "file.pml"</code> when multiple documents should share the same task vocabulary</li>
+          <li><code>@macros_import "file.pml"</code> when one generated or curated macro index should expose many macros at once</li>
+          <li><code>@macro name "file.pml"</code> when a document should register one concrete macro file directly</li>
+        </ul>
+        <h2>Shared participants</h2>
+        <pre><code>@participants_import "_participants.pml"
+
+@tasks
+-[ ] Prepare release notes @ptp=lead
+
+@meeting "Minutes"
+Lead: @@e=lead
+Lead mail: @@ref=participants:lead:email</code></pre>
+        <p>Use this when teams, committees, or recurring meeting series keep reusing the same people. The participant file becomes the shared source of truth.</p>
+        <h2>Shared tags</h2>
+        <pre><code>@tags_import "_workflow_tags.pml"
+
+@tasks
+-[ ] Check deployment window @tag=review
+-[ ] Confirm fix plan @tag=blocked</code></pre>
+        <p>Use shared tags when reporting and workflow consistency matter across many documents. This is the most common cross-file reuse mechanism after plain imports.</p>
+        <h2>Content imports</h2>
+        <pre><code>@import appendix "appendix.pml" pml
+@import legal "legal_notice.html" html
+
+@meeting "Minutes"
+## Appendix
+@@output=appendix
+## Notice
+@@import=legal</code></pre>
+        <p>Content imports are best for maintained snippets, appendices, reusable sections, or legal text that should live outside the main document.</p>
+        <h2>Direct macros vs. macro indexes</h2>
+        <pre><code>@macro badge "{{macro_dir}}/badge.pml"
+@@macro=badge:text=review</code></pre>
+        <p>This direct form is best for a small number of known macros inside one document or repository.</p>
+        <pre><code>@macros_import ".protoml/macro-packs/macros.index.pml"
+@@macro=decisionCard:title=Storage;text=Use the replicated tier</code></pre>
+        <p>This indexed form is best once you install packs through <code>macro_install</code> and want one shared entry point for many macros.</p>
+        <h2>Recommended file layout</h2>
+        <pre><code>meetings/
+  weekly-sync.pml
+shared/
+  _participants.pml
+  _workflow_tags.pml
+snippets/
+  appendix.pml
+  legal_notice.html</code></pre>
+        <p>This layout keeps shared assets explicit and avoids mixing long-lived vocabularies with one-off meeting text.</p>
+        <h2>Common mistakes</h2>
+        <ul>
+          <li>Using a macro when the repeated thing is really just maintained content</li>
+          <li>Keeping participant lists local in every meeting even though the same roster repeats weekly</li>
+          <li>Using local tags everywhere and then wondering why cross-file statistics are inconsistent</li>
+          <li>Registering many macros one by one when a generated <code>@macros_import</code> index would be cleaner</li>
+        </ul>
+        <h2>Rule of thumb</h2>
+        <ul>
+          <li>Reuse data with imports to blocks such as participants and tags</li>
+          <li>Reuse content with <code>@import</code></li>
+          <li>Reuse rendering with macros</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="07_authoring_guide.html">Authoring Guide</a></li>
+          <li><a href="04_macros_guide.html">Macros Guide</a></li>
+          <li><a href="08_macro_registry_guide.html">Own Macro Registry Guide</a></li>
+          <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

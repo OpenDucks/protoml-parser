@@ -17,6 +17,26 @@ function parseBlocks(tokens, options = {}) {
       continue;
     }
 
+    if (token.type === "inlineMacro") {
+      result.inline_macros = result.inline_macros || {};
+      result.inline_macro_errors = result.inline_macro_errors || [];
+
+      if (token.definition?.name) {
+        result.inline_macros[token.definition.name.trim()] = {
+          template: token.definition.template,
+          docs: token.definition.docs || "",
+          source: "inline",
+          line: token.line,
+        };
+      } else if (token.error) {
+        result.inline_macro_errors.push({
+          line: token.line,
+          message: token.error,
+        });
+      }
+      continue;
+    }
+
     if (token.type === "directive") {
       result.meta = result.meta || {};
       result.meta[token.name] = token.value;
@@ -26,6 +46,18 @@ function parseBlocks(tokens, options = {}) {
     if (token.type === "tagsImport") {
       result.tags_import = result.tags_import || [];
       result.tags_import.push(token.file.trim());
+      continue;
+    }
+
+    if (token.type === "participantsImport") {
+      result.participants_import = result.participants_import || [];
+      result.participants_import.push(token.file.trim());
+      continue;
+    }
+
+    if (token.type === "macrosImport") {
+      result.macros_import = result.macros_import || [];
+      result.macros_import.push(token.file.trim());
       continue;
     }
 

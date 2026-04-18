@@ -27,6 +27,35 @@ function renderTemplate(template, context = {}) {
   });
 }
 
+function isTruthySetting(value) {
+  const normalized = String(value == null ? "" : value).trim().toLowerCase();
+  return ["1", "true", "yes", "on", "hide", "hidden"].includes(normalized);
+}
+
+function shouldHideMeta(ast, options = {}) {
+  if (options.hideMeta) {
+    return true;
+  }
+
+  const meta = ast?.meta || {};
+  if (isTruthySetting(meta.hide_meta) || isTruthySetting(meta.hideMeta)) {
+    return true;
+  }
+
+  const outputMeta = String(meta.output_meta == null ? "" : meta.output_meta).trim().toLowerCase();
+  return ["hide", "hidden", "false", "none", "off"].includes(outputMeta);
+}
+
+function getVisibleMetaEntries(ast, options = {}) {
+  if (shouldHideMeta(ast, options)) {
+    return [];
+  }
+
+  return Object.entries(ast?.meta || {}).filter(([key]) =>
+    !["protocol", "meeting_title", "title", "theme", "hide_meta", "hideMeta", "output_meta"].includes(key)
+  );
+}
+
 function normalizeWhitespace(text) {
   return String(text || "")
     .replace(/[ \t]+\n/g, "\n")
@@ -140,5 +169,7 @@ module.exports = {
   normalizeWhitespace,
   renderStructuredReference,
   renderTemplate,
+  getVisibleMetaEntries,
+  shouldHideMeta,
   stripHtml,
 };

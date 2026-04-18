@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Examples Cookbook - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Examples Cookbook</h1>
+        <p>ProtoML already ships runnable examples. This guide explains which workflow each one demonstrates.</p>
+        <h2>Simple meeting protocol</h2>
+        <p>Use a small document with <code>@participants</code>, <code>@subjects</code>, <code>@tasks</code>, and <code>@meeting</code> as the best starting point for weekly syncs and team notes.</p>
+        <p>This is the minimal pattern that already shows ProtoML's value: structured data at the top, readable narrative below, and references between them.</p>
+        <h2>Shared tags across files</h2>
+        <pre><code>protoparser tags "examples/feature-suite/_workflow_tags.pml" statistics</code></pre>
+        <p>Use this pattern when multiple meeting files should report against the same workflow vocabulary.</p>
+        <h2>Content imports</h2>
+        <p>The feature suite demonstrates both imported <code>.pml</code> and imported <code>.html</code>.</p>
+        <p>Choose this when standard sections, appendices, or maintained snippets should live outside the main file.</p>
+        <h2>Macros</h2>
+        <p>Macros are the right example path when repeated presentation blocks start appearing in many documents. Explore bundled macros first, then move to registry-based packs only when sharing really matters.</p>
+        <h2>Analysis and statistics</h2>
+        <pre><code>protoparser analyze "examples/feature-suite/main_demo.pml" statistics
+protoparser analyze "examples/feature-suite/main_demo.pml" graph
+protoparser register "examples/feature-suite" statistics</code></pre>
+        <p>These commands are what turn example documents into something you can inspect operationally, not just render visually.</p>
+        <h2>Recommended example path</h2>
+        <ol>
+          <li>Start with <code>examples/feature-suite/main_demo.pml</code></li>
+          <li>Render it to HTML</li>
+          <li>Run tag analysis on <code>_workflow_tags.pml</code></li>
+          <li>Run <code>analyze ... statistics</code></li>
+          <li>Explore bundled macros with <code>--listMacros "{{macro_dir}}"</code></li>
+          <li>Explore the external macro registry example in <code>examples/macro-registry-suite/</code></li>
+        </ol>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="02_quick_start.html">Quick Start</a></li>
+          <li><a href="08a_reuse_and_imports.html">Reuse And Imports Guide</a></li>
+          <li><a href="04_macros_guide.html">Macros Guide</a></li>
+          <li><a href="10_outputs_and_rendering.html">Outputs And Rendering</a></li>
+          <li><a href="08_macro_registry_guide.html">Own Macro Registry Guide</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

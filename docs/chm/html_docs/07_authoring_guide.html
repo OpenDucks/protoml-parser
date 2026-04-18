@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Authoring Guide - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Authoring Guide</h1>
+        <p>This guide focuses on writing maintainable ProtoML documents, not on listing every syntax rule.</p>
+        <h2>Start with a consistent skeleton</h2>
+        <ol>
+          <li>document metadata</li>
+          <li>participants</li>
+          <li>subjects</li>
+          <li>tags or tag imports</li>
+          <li>tasks</li>
+          <li>meeting content</li>
+          <li>optional governance blocks such as signatures, approvals, references, or attachments</li>
+        </ol>
+        <p>This order keeps the structural source of truth near the top and the human-readable narrative near the bottom, which makes large files easier to review and diff.</p>
+        <h2>Name things for reuse</h2>
+        <p>Prefer stable, meaningful IDs such as <code>lead</code>, <code>pm</code>, <code>security</code>, <code>release</code>, or <code>review</code>.</p>
+        <p>A good rule is that an ID should still make sense three months later without reading the whole file again.</p>
+        <h2>Keep structured data in blocks</h2>
+        <p>If a value should be reused later, define it once in a block instead of duplicating it in prose.</p>
+        <ul>
+          <li>Participants belong in <code>@participants</code>, not copied repeatedly in meeting text</li>
+          <li>Use <code>@participants_import</code> when multiple documents share the same participant roster</li>
+          <li>Subjects belong in <code>@subjects</code>, then tasks and notes can point back to them</li>
+          <li>Approval and signature data belong in their dedicated blocks if they are referenced more than once</li>
+        </ul>
+        <h2>Use shared tags for teams and projects</h2>
+        <p>Move stable task vocabularies into shared <code>_tags.pml</code> files when multiple documents share the same workflow or cross-file analysis matters.</p>
+        <p>Keep local tags only when a label is temporary, one-off, or too project-specific to be worth sharing.</p>
+        <h2>Split large documents deliberately</h2>
+        <p>Use <code>@import</code> for appendices, reusable legal or policy text, standard meeting sections, or shared snippets.</p>
+        <p>The main document should still read like the table of contents and orchestration layer of the whole document, not like a random pile of imports.</p>
+        <h2>Use macros sparingly but intentionally</h2>
+        <p>Macros are best for repeated presentation patterns such as alerts, badges, summaries, timelines, and finance cards.</p>
+        <p>If the repeated thing is really content, choose imports. If you need a reusable rendered component with its own structure and presentation, choose macros. If you only want to change the overall document look, choose a renderer theme instead.</p>
+        <h2>Governance documents need extra discipline</h2>
+        <p>Establish conventions for <code>@record_id</code>, <code>@status</code>, <code>@author</code>, <code>@version</code>, <code>@effective_date</code>, <code>@valid_until</code>, and <code>@review_date</code>, then use <code>protoparser register "&lt;dir&gt;" statistics</code>.</p>
+        <h2>Worked example</h2>
+        <pre><code>@tags_import "_workflow_tags.pml"
+@protocol "Platform Weekly Sync - {{date}}"
+@date:17.04.2026
+@author:Jane Doe
+@status:review
+@record_id:PLATFORM-WEEKLY-2026-04-17
+
+@participants
+=lead:Jane Doe,jdoe,jdoe@example.com
+=ops:Max Mustermann,mmustermann,max@example.com
+=sec:Alex Roe,aroe,alex@example.com
+
+@subjects
+=release:Release status
+=security:Security review
+=followup:Next actions
+
+@tasks
+-[ ] Finalize release notes @ptp=lead =release @tag=important
+-[ ] Recheck deployment window @ptp=ops =release @tag=review
+-[ ] Confirm exception handling for audit finding @ptp=sec =security @tag=blocked
+
+@meeting "Weekly Minutes"
+# Platform Weekly Sync
+## Summary
+Current focus: @@e=release
+## Participants
+@@e=lead, @@e=ops, @@e=sec
+## Open points
+Audit topic: @@e=security
+Next section: @@e=followup</code></pre>
+        <h2>Why this example is maintainable</h2>
+        <ul>
+          <li>Document identity and lifecycle are visible at the top</li>
+          <li>Participant and subject IDs are stable and descriptive</li>
+          <li>Tasks point to structured subjects and tags instead of embedding everything in plain text</li>
+          <li>The meeting block reads clearly while still reusing structured values</li>
+          <li>The shared tags file keeps workflow classification consistent across multiple documents</li>
+        </ul>
+        <h2>Common authoring mistakes</h2>
+        <ul>
+          <li>Using throwaway IDs such as <code>1</code> or <code>x</code> for everything</li>
+          <li>Keeping important document metadata only in prose</li>
+          <li>Copying repeated names and labels instead of referencing them</li>
+          <li>Using macros where a plain import or structured block would be simpler</li>
+          <li>Letting large files grow without extracting reusable imported sections</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="06_concepts.html">ProtoML Concepts</a></li>
+          <li><a href="08a_reuse_and_imports.html">Reuse And Imports Guide</a></li>
+          <li><a href="11_examples_cookbook.html">Examples Cookbook</a></li>
+          <li><a href="12_reference_map.html">Reference Map</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

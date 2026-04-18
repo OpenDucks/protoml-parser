@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Macro Dir - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Macro Dir</h1>
+<div class="topic-meta">Topic: <code>macro_dir</code></div>
+<h2>Explanation</h2>
+<p><code>{{macro_dir}}</code> is a placeholder for the built-in macros directory.</p>
+<p>It can be used in CLI commands and in <code>@macro</code> declarations.</p>
+<p>It should generally be wrapped in double quotes when used as part of a path. This helps avoid broken paths and shell-side interpretation before ProtoML resolves the placeholder.</p>
+<p>Trust clarification:</p>
+<ul>
+<li>using <code>{{macro_dir}}</code> does not by itself make a macro trusted</li>
+<li>ProtoML resolves the placeholder to the real built-in macro directory and then checks whether the referenced file matches the shipped built-in hash manifest</li>
+<li>only known bundled built-in macros can become <code>trusted</code> without detached signatures, and only when they do not trigger hard risk flags such as JavaScript or external URLs</li>
+<li>extra or modified files inside that directory are not automatically trusted</li>
+</ul>
+<p>Typical outcomes:</p>
+<ul>
+<li><code>trusted</code>: bundled built-in macro, hash matches, no hard risk flag</li>
+<li><code>untrusted</code>: bundled built-in macro with JavaScript or external URLs, or a modified built-in macro</li>
+<li><code>unknown</code>: normal local macro outside the built-in trust flow and without signature-based trust</li>
+</ul>
+<h2>Examples</h2>
+<pre><code>@macro image &quot;{{macro_dir}}/image.pml&quot;
+protoparser --listMacros &quot;{{macro_dir}}&quot;</code></pre>
+  </main>
+</body>
+</html>

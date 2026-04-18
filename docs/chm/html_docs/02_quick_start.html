@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Quick Start - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Quick Start</h1>
+        <p>This is the shortest useful end-to-end ProtoML workflow.</p>
+        <h2>1. Install</h2>
+        <pre><code>npm install -g protoml-parser</code></pre>
+        <h2>2. Create <code>test.pml</code></h2>
+        <pre><code>@tags_import "_tags.pml"
+@protocol "Weekly Sync - {{date}}"
+
+@date:17.04.2026
+
+@participants
+=lead:Jane Doe,jdoe,jdoe@example.com
+=ops:Max Mustermann,mmustermann,max@example.com
+
+@subjects
+=0:Release status
+=1:Next steps
+
+@tasks
+-[ ] Prepare package notes @ptp=lead =0 @tag=important
+-[ ] Validate release build @ptp=ops =1 @tag=review
+
+@meeting "Minutes"
+# Weekly Sync
+## Participants
+@@e=lead, @@e=ops
+## Topics
+@@e=0
+@@e=1</code></pre>
+        <h2>3. Create <code>_tags.pml</code></h2>
+        <pre><code>@title "Shared Workflow Tags"
+
+@tags
+=important:High priority
+=review:Needs review</code></pre>
+        <p>This first split already demonstrates a useful ProtoML habit: keep reusable classification in a shared tags file and keep meeting-specific content in the meeting file.</p>
+        <h2>4. Render HTML</h2>
+        <pre><code>protoparser "test.pml" html</code></pre>
+        <p>HTML is the best first output because it shows most of the structure, styling, tags, and macro behavior in the richest form.</p>
+        <h2>5. Open it in the viewer</h2>
+        <pre><code>protoviewer "test.pml"</code></pre>
+        <p>Use the viewer when you want a local review loop while editing instead of thinking in terms of generated export files.</p>
+        <h2>6. Add a first macro</h2>
+        <pre><code>@macro badge "{{macro_dir}}/badge.pml"
+@@macro=badge:text=review</code></pre>
+        <p>This is a good first macro because it adds presentation reuse without changing the document model itself.</p>
+        <h2>7. Explore the feature suite</h2>
+        <pre><code>protoparser "examples/feature-suite/main_demo.pml" html
+protoparser analyze "examples/feature-suite/main_demo.pml" statistics
+protoparser tags "examples/feature-suite/_workflow_tags.pml" statistics</code></pre>
+        <p>The feature suite is where you should look once the first file makes sense. It shows imports, tag merging, macros, analysis, and richer cross-file behavior.</p>
+        <h2>Path recommendation</h2>
+        <p>Wrap file paths in double quotes whenever possible, especially for paths with spaces or <code>{{macro_dir}}</code>.</p>
+        <h2>What you learned in this first pass</h2>
+        <ul>
+          <li>ProtoML separates structured data from the reader-facing narrative</li>
+          <li>Shared tags are a practical way to keep task language consistent</li>
+          <li>HTML and the viewer are the easiest first ways to inspect a document</li>
+          <li>Macros add reusable rendering patterns on top of a stable document structure</li>
+        </ul>
+        <h2>Next reading</h2>
+        <ul>
+          <li><a href="06_concepts.html">ProtoML Concepts</a></li>
+          <li><a href="07_authoring_guide.html">Authoring Guide</a></li>
+          <li><a href="04_macros_guide.html">Macros Guide</a></li>
+          <li><a href="08a_reuse_and_imports.html">Reuse And Imports Guide</a></li>
+          <li><a href="08_macro_registry_guide.html">Own Macro Registry Guide</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

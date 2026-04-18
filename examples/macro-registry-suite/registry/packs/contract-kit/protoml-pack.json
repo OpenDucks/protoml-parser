@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "name": "contract-kit",
+  "version": "1.0.0",
+  "description": "ProtoML macro pack: contract-kit",
+  "author": "",
+  "macros": [
+    "macros/contract-kit_sample.pml"
+  ],
+  "themes": [],
+  "dependencies": [
+    {
+      "name": "base-kit"
+    }
+  ],
+  "protoml": ">=1.3.0"
+}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Bundle - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Bundle</h1>
+<div class="topic-meta">Topic: <code>bundle</code></div>
+<h2>Explanation</h2>
+<p><code>protoparser bundle &quot;&lt;file.pml&gt;&quot;</code> writes a bundled <code>.pml</code> file where imported ProtoML and HTML content has been expanded into a single document.</p>
+<p>This is useful for archival, handoff, review, and storing a self-contained ProtoML snapshot without external content imports.</p>
+<p>The bundled output keeps the ProtoML structure:</p>
+<ul>
+<li>merged metadata</li>
+<li>merged <code>@participants</code>, <code>@subjects</code>, <code>@tags</code>, <code>@signatures</code>, and <code>@approvals</code></li>
+<li>merged <code>@references</code> and <code>@attachments</code></li>
+<li>the <code>@meeting</code> block with <code>@@import</code> and <code>@@output</code> expanded</li>
+</ul>
+<p>The default output name is based on the input file, for example <code>test-bundle.pml</code>.</p>
+<h2>Examples</h2>
+<pre><code>protoparser bundle &quot;test.pml&quot;
+protoparser bundle &quot;meeting.pml&quot; -output=meeting-archive</code></pre>
+  </main>
+</body>
+</html>

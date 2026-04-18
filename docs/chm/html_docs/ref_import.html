@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Import - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Import</h1>
+<div class="topic-meta">Topic: <code>import</code></div>
+<h2>Explanation</h2>
+<p><code>@import name &quot;file&quot; type</code> registers external content for later output inside the <code>@meeting</code> block.</p>
+<p>Supported types are <code>html</code> and <code>pml</code>.</p>
+<p>Related import-style commands:</p>
+<ul>
+<li><code>@import ...</code> for reusable content blocks</li>
+<li><code>@tags_import ...</code> for reusable task tags</li>
+<li><code>@participants_import ...</code> for reusable participant lists</li>
+<li><code>@macros_import ...</code> for reusable macro registrations</li>
+</ul>
+<p>Commands such as <code>@new_macro</code> are not imported directly into documents. Instead, a file that starts with <code>@new_macro</code> is referenced through <code>@macro ...</code>.</p>
+<p>Paths should be wrapped in double quotes. This is especially recommended when paths contain spaces.</p>
+<h2>Examples</h2>
+<pre><code>@import snippet &quot;snippet.html&quot; html
+@import appendix &quot;appendix.pml&quot; pml</code></pre>
+  </main>
+</body>
+</html>

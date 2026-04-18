@@ -56,9 +56,10 @@ function getLocalStats(ast) {
     tasks_done: taskState.done,
     notes: countItems(ast.notes),
     meeting_lines: countItems(ast.meeting),
-    macros: countKeys(ast.macros),
+    macros: countKeys(ast.macros) + countKeys(ast.inline_macros),
     content_imports: countKeys(ast.imports),
     tag_imports: countItems(ast.tags_import),
+    participants_imports: countItems(ast.participants_import),
   };
 }
 
@@ -104,6 +105,7 @@ function loadPmlAnalysisTree(filename, ancestors = new Set()) {
     !countKeys(localAst.participants) &&
     !countKeys(localAst.subjects) &&
     !countKeys(localAst.macros) &&
+    !countKeys(localAst.inline_macros) &&
     !countKeys(localAst.imports) &&
     !countItems(localAst.tasks) &&
     !countItems(localAst.notes) &&
@@ -115,6 +117,9 @@ function loadPmlAnalysisTree(filename, ancestors = new Set()) {
       return loadPmlAnalysisTree(childPath, nextAncestors);
     })
     .filter(Boolean);
+
+  const participantImports = (Array.isArray(localAst.participants_import) ? localAst.participants_import : [])
+    .map((ref) => path.resolve(baseDir, normalizeFileRef(ref)));
 
   const contentImports = Object.entries(localAst.imports || {}).map(([name, entry]) => {
     const importPath = path.resolve(baseDir, normalizeFileRef(entry.file));
@@ -151,11 +156,18 @@ function loadPmlAnalysisTree(filename, ancestors = new Set()) {
     meta: resolvedAst.meta || {},
     local_stats: getLocalStats(localAst),
     resolved_stats: getResolvedStats(resolvedAst),
-    macros: Object.keys(localAst.macros || {}).map((name) => ({
-      name,
-      file: localAst.macros[name],
-    })),
+    macros: [
+      ...Object.keys(localAst.inline_macros || {}).map((name) => ({
+        name,
+        file: `[inline macro line ${localAst.inline_macros[name].line || 0}]`,
+      })),
+      ...Object.keys(localAst.macros || {}).map((name) => ({
+        name,
+        file: localAst.macros[name],
+      })),
+    ],
     tag_imports: tagImports,
+    participants_imports: participantImports,
     content_imports: contentImports,
   };
 }
@@ -460,6 +472,106 @@ function renderPmlAnalysisGraph(report, options = {}) {
   return lines.join("\n");
 }
 
+function renderPmlAnalysisGraphPreview(graphSource, report, options = {}) {
+  const title = String(report?.title || report?.path || "ProtoML Graph");
+  const direction = String(options.graphDirection || "TD").toUpperCase();
+  const graphView = String(options.graphView || "compact").toLowerCase();
+  const escapedGraph = String(graphSource || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title} Graph Preview</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --line: #d6deea;
+      --ink: #1c2430;
+      --muted: #5c6778;
+      --accent: #1f6feb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, #f9fbff 0%, #eef3fb 100%);
+    }
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px 20px;
+      box-shadow: 0 18px 40px rgba(31, 48, 76, 0.08);
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    #graph {
+      min-height: 280px;
+      overflow: auto;
+    }
+    pre {
+      margin: 0;
+      padding: 16px;
+      border-radius: 14px;
+      background: #0f1720;
+      color: #d9e2ef;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .notice {
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #eef5ff;
+      border: 1px solid #bfd6ff;
+      color: #21497d;
+    }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="panel">
+      <h1>${title}</h1>
+      <div class="meta">View: ${graphView} | Direction: ${direction}</div>
+      <p class="notice">
+        This preview renders the generated Mermaid graph directly in the browser.
+        If you want to edit or troubleshoot the raw <code>.mmd</code> file, open it in Mermaid-capable software such as the
+        <a href="https://mermaid.live/" target="_blank" rel="noreferrer">Mermaid Live Editor</a>.
+      </p>
+    </section>
+    <section class="panel">
+      <div id="graph" class="mermaid">${escapedGraph}</div>
+    </section>
+    <section class="panel">
+      <h2>Raw Mermaid Source</h2>
+      <pre>${escapedGraph}</pre>
+    </section>
+  </main>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: true, securityLevel: "loose" });
+  </script>
+</body>
+</html>`;
+}
+
 module.exports = {
   analyzePmlFile,
   formatPmlAnalysis,
@@ -467,4 +579,5 @@ module.exports = {
   renderPmlAnalysisHTML,
   renderPmlAnalysisPDF,
   renderPmlAnalysisGraph,
+  renderPmlAnalysisGraphPreview,
 };

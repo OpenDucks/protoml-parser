@@ -1,46 +1,1101 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <title>ProtoML Viewer</title>
-
-
-</head>
-
-<body>
-    <h1>ProtoML Viewer</h1>
-    <p>The viewer heavily differs from the parser as not all styles are supported.</p>
-    <textarea id="input" rows="10" cols="80">@date:21.05.2025
-@notes
-- Some note
-    </textarea><br />
-    <button onclick="render()">Render</button>
-    <iframe id="preview" style="width:100%; height:300px;"></iframe>
-    <button id="download">Download</button>
-
-</body>
-<script src="parser.bundle.js"></script>
-<script>
-    function render() {
-        const input = document.getElementById("input").value;
-        const html = ProtoParser.parseTextToHTML(input);
-        document.getElementById("preview").srcdoc = html;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProtoML Web Parser</title>
+  <style>
+    :root {
+      --bg: #efe8db;
+      --panel: #fffdf8;
+      --panel-2: #f8f2e8;
+      --ink: #1f262a;
+      --muted: #5e676d;
+      --line: #d6cbbb;
+      --accent: #0f5f67;
+      --accent-2: #b96a2f;
+      --accent-3: #1d7a57;
+      --editor: #fefbf5;
+      --error-bg: #fff0ea;
+      --error-line: #e5b39a;
+      --shadow: 0 24px 50px rgba(22, 29, 33, 0.12);
     }
 
-    document.getElementById("download").addEventListener("click", () => {
-      const content = input.value;
-      downloadFile(content, "protocol.pml", "text/plain");
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(185, 106, 47, 0.18), transparent 26%),
+        radial-gradient(circle at top right, rgba(15, 95, 103, 0.12), transparent 24%),
+        linear-gradient(180deg, #f6f1e7 0%, #ece4d5 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      font-size: 0.82rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.4rem, 4vw, 4.2rem);
+      line-height: 0.95;
+      font-weight: 700;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 940px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .hint-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .hint-list span {
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(15, 95, 103, 0.07);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(360px, 0.92fr) minmax(420px, 1.08fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .right-column {
+      display: grid;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(31, 38, 42, 0.08);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(246,239,228,0.96));
+    }
+
+    .panel-head h2,
+    .panel-head h3 {
+      margin: 0;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    .panel-head small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .actions,
+    .preview-actions,
+    .insights-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button,
+    .file-button,
+    select {
+      border: 1px solid rgba(15, 95, 103, 0.2);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    button.secondary {
+      background: #fff8f2;
+      border-color: rgba(185, 106, 47, 0.26);
+    }
+
+    button:hover,
+    .file-button:hover,
+    select:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent);
+    }
+
+    .file-button input {
+      display: none;
+    }
+
+    .editor-wrap {
+      padding: 16px 18px 18px;
+      background: var(--editor);
+    }
+
+    textarea,
+    pre {
+      width: 100%;
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      background: #fffefa;
+      color: var(--ink);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.94rem;
+      line-height: 1.55;
+      box-shadow: inset 0 1px 2px rgba(30, 33, 36, 0.05);
+      overflow: auto;
+    }
+
+    textarea {
+      min-height: 72vh;
+      resize: vertical;
+    }
+
+    pre {
+      min-height: 26vh;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .statusbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 20px 18px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .dropzone {
+      margin: 0 18px 18px;
+      border: 1px dashed rgba(15, 95, 103, 0.35);
+      border-radius: 16px;
+      padding: 16px;
+      color: var(--muted);
+      background: rgba(15, 95, 103, 0.04);
+      transition: background 120ms ease, border-color 120ms ease;
+    }
+
+    .dropzone.active {
+      background: rgba(15, 95, 103, 0.1);
+      border-color: var(--accent);
+      color: var(--ink);
+    }
+
+    .preview-wrap {
+      padding: 0;
+      background: #e6dfd1;
+    }
+
+    iframe {
+      width: 100%;
+      min-height: 56vh;
+      border: 0;
+      background: #fff;
+    }
+
+    .text-output {
+      display: none;
+      padding: 18px;
+      background: var(--panel-2);
+    }
+
+    .error-box {
+      margin: 18px 18px 0;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: var(--error-bg);
+      border: 1px solid var(--error-line);
+      color: #7a3d1f;
+      font-family: Consolas, "Courier New", monospace;
+      display: none;
+      white-space: pre-wrap;
+    }
+
+    .insights {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      padding: 18px;
+      border-right: 1px solid var(--line);
+      background: #fffdfa;
+    }
+
+    .stat-card {
+      padding: 12px 13px;
+      border-radius: 16px;
+      background: #f8f3ea;
+      border: 1px solid rgba(31, 38, 42, 0.06);
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: 1.2rem;
+      margin-bottom: 4px;
+      color: var(--accent);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    .stat-card span {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .notes-side {
+      padding: 18px;
+      background: linear-gradient(180deg, #fffefa 0%, #f6efe2 100%);
+    }
+
+    .notes-side h4 {
+      margin: 0 0 10px;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    .issue-list,
+    .outline-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .issue-list li,
+    .outline-list li {
+      margin-bottom: 8px;
+      line-height: 1.45;
+    }
+
+    .issue-list li strong {
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 0 18px 18px;
+      background: var(--panel);
+    }
+
+    .tabs button {
+      background: #fff7ef;
+      border-color: rgba(185, 106, 47, 0.22);
+    }
+
+    .tabs button.active {
+      background: var(--accent-2);
+      color: #fff;
+      border-color: var(--accent-2);
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    @media (max-width: 1180px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      textarea {
+        min-height: 52vh;
+      }
+
+      iframe {
+        min-height: 46vh;
+      }
+
+      .insights {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">Web Parser</div>
+      <h1>ProtoML Browser Workbench</h1>
+      <p>
+        Edit, inspect, and render ProtoML directly in the browser. This workspace is meant for
+        authoring, quick rendering, output previews, and lightweight structural checks, while the
+        Windows CHM remains the bundled Help and Docs experience.
+      </p>
+      <div class="hint-list">
+        <span>HTML, JSON, Markdown, and Text output</span>
+        <span>Local analysis and validation hints</span>
+        <span>Autosave, drag and drop, and export</span>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Source</h2>
+            <small>Edit ProtoML, load a file, or start from a built-in sample.</small>
+          </div>
+          <div class="actions">
+            <label class="file-button">
+              Open .pml
+              <input id="fileInput" type="file" accept=".pml,.txt,text/plain" />
+            </label>
+            <select id="sampleSelect" aria-label="Sample preset">
+              <option value="meeting">Sample: Meeting</option>
+              <option value="governance">Sample: Governance</option>
+              <option value="macros">Sample: Macros</option>
+            </select>
+            <button id="sampleButton" class="secondary">Load Sample</button>
+            <button id="saveSourceButton">Save Source</button>
+            <button id="renderButton" class="primary">Render</button>
+          </div>
+        </div>
+        <div class="editor-wrap">
+          <textarea id="source"></textarea>
+        </div>
+        <div class="dropzone" id="dropzone">
+          Drop a <code>.pml</code> file here to load it into the editor.
+        </div>
+        <div class="statusbar">
+          <span id="fileStatus">No local file loaded</span>
+          <label><input id="autoRender" type="checkbox" checked /> Auto-render on input</label>
+        </div>
+      </article>
+
+      <section class="right-column">
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Output</h2>
+              <small>Switch between rendered HTML and structured output views.</small>
+            </div>
+            <div class="preview-actions">
+              <select id="outputMode" aria-label="Output mode">
+                <option value="html">HTML Preview</option>
+                <option value="json">AST JSON</option>
+                <option value="markdown">Markdown</option>
+                <option value="text">Plain Text</option>
+              </select>
+              <select id="renderTheme" aria-label="Document theme">
+                <option value="">Theme: Auto</option>
+                <option value="default">Theme: Default</option>
+                <option value="dark">Theme: Dark</option>
+                <option value="cyber">Theme: Cyber</option>
+                <option value="neon">Theme: Neon</option>
+                <option value="pastel">Theme: Pastel</option>
+                <option value="solarized">Theme: Solarized</option>
+                <option value="terminal">Theme: Terminal</option>
+                <option value="print">Theme: Print</option>
+                <option value="gridcore">Theme: Gridcore</option>
+                <option value="glitch-jff">Theme: Glitch JFF</option>
+              </select>
+              <select id="previewTheme" aria-label="Preview chrome theme">
+                <option value="paper">Paper Chrome</option>
+                <option value="slate">Slate Chrome</option>
+                <option value="linen">Linen Chrome</option>
+              </select>
+              <label><input id="hideMetaToggle" type="checkbox" /> Hide Meta</label>
+              <button id="copyOutputButton">Copy Output</button>
+              <button id="openPreviewButton">Open In New Tab</button>
+              <button id="saveOutputButton">Save Output</button>
+            </div>
+          </div>
+          <div class="error-box" id="errorBox"></div>
+          <div class="preview-wrap" id="previewWrap">
+            <iframe id="preview" title="ProtoML output preview"></iframe>
+          </div>
+          <div class="text-output" id="textOutputWrap">
+            <pre id="textOutput"></pre>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Insights</h3>
+              <small>Live structure, stats, and local browser-only validation hints.</small>
+            </div>
+            <div class="insights-actions">
+              <button id="copyAnalysisButton">Copy Analysis</button>
+            </div>
+          </div>
+          <div class="insights">
+            <div class="stats-grid" id="statsGrid"></div>
+            <div class="notes-side">
+              <h4>Document Outline</h4>
+              <ol class="outline-list" id="outlineList"></ol>
+              <h4>Checks And Notes</h4>
+              <ul class="issue-list" id="issueList"></ul>
+              <div class="footer-note">
+                Browser mode analyzes the current source text only. File-based imports and external macro templates are not loaded from disk here.
+              </div>
+            </div>
+          </div>
+          <div class="tabs">
+            <button type="button" class="active" data-inspector="ast">AST</button>
+            <button type="button" data-inspector="tokens">Tokens</button>
+            <button type="button" data-inspector="analysis">Analysis JSON</button>
+          </div>
+          <div class="text-output" style="display:block; padding-top:0;">
+            <pre id="inspectorOutput"></pre>
+          </div>
+        </article>
+      </section>
+    </section>
+  </div>
+
+  <script src="parser.bundle.js"></script>
+  <script>
+    const STORAGE_KEY = "protoml-web-workbench";
+
+    const samples = {
+      meeting: {
+        filename: "sample-meeting.pml",
+        source: `@tags
+=important:Important
+=review:Needs Review
+=followup:Follow-up
+
+@protocol "Architecture Review - {{date}}"
+@date:17.04.2026
+@location:Berlin
+
+@participants
+=lead:Jane Doe,jdoe,jdoe@example.com
+=ops:Max Mustermann,mmustermann,max@example.com
+=sec:Kim Green,kgreen,kim@example.com
+
+@subjects
+=0:Decision backlog
+=1:Release preparation
+=2:Security follow-up
+
+@tasks
+-[ ] Prepare rollout checklist @ptp=lead =1 @tag=important
+-[ ] Review access policy update @ptp=sec =2 @tag=review
+-[x] Confirm maintenance window @ptp=ops =1 @tag=followup
+
+@notes
+- Review focused on deployment readiness and approval timing.
+
+@meeting "Architecture Review"
+# Decisions
+## Participants
+@@e=lead, @@e=ops, @@e=sec
+## Focus
+@@e=0
+## Next actions
+- Track remaining tasks in the release protocol
+`
+      },
+      governance: {
+        filename: "sample-governance.pml",
+        source: `@protocol "Controlled Procedure - {{record_id}}"
+@title "Controlled Procedure"
+@record_id:PROC-2026-014
+@version:2.3
+@status:approved
+@effective_date:2026-04-20
+@review_date:2026-10-01
+@author:Quality Board
+
+@participants
+=owner:Lisa Black,lblack,lisa@example.com
+=reviewer:Noah White,nwhite,noah@example.com
+
+@signatures
+=sig_owner:Lisa Black,Process Owner,2026-04-16,approved for release
+
+@approvals
+=ap_qa:QA Review,approved,Noah White,2026-04-16,all blocking findings resolved
+
+@meeting "Controlled Procedure Summary"
+# Scope
+Procedure update for release documentation and approval handling.
+
+# Approval
+@@signature=sig_owner
+@@approval=ap_qa
+`
+      },
+      macros: {
+        filename: "sample-macros.pml",
+        source: `@protocol "Macro Showcase - {{date}}"
+@date:17.04.2026
+
+@participants
+=pm:Anna Example,aexample,anna@example.com
+
+@subjects
+=0:Visual blocks
+
+@meeting "Macro Playground"
+# Inline styling
+-b Strong emphasis -b-
+-i quiet emphasis -i-
+-a=https://example.com External link -a-
+
+# References
+Lead: @@ref=participants:pm:name
+Subject: @@ref=subjects:0
+
+# Local note
+This browser workbench does not load external macro files from disk, but it still resolves inline references and structure.
+`
+      }
+    };
+
+    const source = document.getElementById("source");
+    const preview = document.getElementById("preview");
+    const previewWrap = document.getElementById("previewWrap");
+    const textOutputWrap = document.getElementById("textOutputWrap");
+    const textOutput = document.getElementById("textOutput");
+    const inspectorOutput = document.getElementById("inspectorOutput");
+    const fileInput = document.getElementById("fileInput");
+    const renderButton = document.getElementById("renderButton");
+    const sampleButton = document.getElementById("sampleButton");
+    const sampleSelect = document.getElementById("sampleSelect");
+    const saveSourceButton = document.getElementById("saveSourceButton");
+    const saveOutputButton = document.getElementById("saveOutputButton");
+    const copyOutputButton = document.getElementById("copyOutputButton");
+    const copyAnalysisButton = document.getElementById("copyAnalysisButton");
+    const openPreviewButton = document.getElementById("openPreviewButton");
+    const autoRender = document.getElementById("autoRender");
+    const fileStatus = document.getElementById("fileStatus");
+    const dropzone = document.getElementById("dropzone");
+    const errorBox = document.getElementById("errorBox");
+    const previewTheme = document.getElementById("previewTheme");
+    const renderTheme = document.getElementById("renderTheme");
+    const hideMetaToggle = document.getElementById("hideMetaToggle");
+    const outputMode = document.getElementById("outputMode");
+    const statsGrid = document.getElementById("statsGrid");
+    const issueList = document.getElementById("issueList");
+    const outlineList = document.getElementById("outlineList");
+    const inspectorTabs = Array.from(document.querySelectorAll("[data-inspector]"));
+
+    let currentFilename = "protocol.pml";
+    let lastRendered = {
+      html: "",
+      text: "",
+      mime: "text/html",
+      extension: "html"
+    };
+    let lastAnalysis = null;
+    let currentInspector = "ast";
+
+    const previewChromeThemes = {
+      paper: "body{background:#fffdf8;} section{box-shadow:0 1px 0 rgba(0,0,0,.02);}",
+      slate: "body{background:#f2f5f8;} section{box-shadow:0 1px 0 rgba(0,0,0,.03);}",
+      linen: "body{background:#faf4e8;} section{box-shadow:0 1px 0 rgba(90,70,40,.04);}"
+    };
+
+    function setStatus(text) {
+      fileStatus.textContent = text;
+    }
+
+    function setError(message) {
+      errorBox.style.display = message ? "block" : "none";
+      errorBox.textContent = message || "";
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    function injectPreviewChrome(html, themeName) {
+      const extraCss = previewChromeThemes[themeName] || previewChromeThemes.paper;
+      const chromeCss = `
+        html {
+          padding: 18px;
+          background: transparent;
+        }
+        body {
+          margin: 0 auto;
+          padding: 24px;
+          max-width: 1100px;
+          min-height: calc(100vh - 36px);
+          border-radius: 18px;
+          box-shadow: 0 18px 44px rgba(19, 31, 49, 0.08);
+        }
+      `;
+
+      if (html.includes("</head>")) {
+        return html.replace("</head>", `<style>${chromeCss}${extraCss}</style></head>`);
+      }
+
+      return `<style>${chromeCss}${extraCss}</style>${html}`;
+    }
+
+    function downloadFile(content, filename, mime) {
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 800);
+    }
+
+    async function copyText(content) {
+      if (!content) return;
+      try {
+        await navigator.clipboard.writeText(content);
+      } catch (error) {
+        console.warn("Clipboard write failed", error);
+      }
+    }
+
+    function getOutputDescriptor(mode) {
+      if (mode === "json") {
+        return { extension: "json", mime: "application/json" };
+      }
+      if (mode === "markdown") {
+        return { extension: "md", mime: "text/markdown" };
+      }
+      if (mode === "text") {
+        return { extension: "txt", mime: "text/plain" };
+      }
+      return { extension: "html", mime: "text/html" };
+    }
+
+    function renderStats(stats) {
+      const orderedKeys = [
+        ["lines", "Lines"],
+        ["tokens", "Tokens"],
+        ["participants", "Participants"],
+        ["subjects", "Subjects"],
+        ["tasks_total", "Tasks"],
+        ["tasks_open", "Open Tasks"],
+        ["tasks_done", "Done Tasks"],
+        ["notes", "Notes"],
+        ["meeting_lines", "Meeting Lines"],
+        ["tags", "Tags"],
+        ["signatures", "Signatures"],
+        ["approvals", "Approvals"]
+      ];
+
+      statsGrid.innerHTML = orderedKeys.map(([key, label]) => {
+        return `<div class="stat-card"><strong>${escapeHtml(stats[key] ?? 0)}</strong><span>${escapeHtml(label)}</span></div>`;
+      }).join("");
+    }
+
+    function renderOutline(ast) {
+      const headings = Array.isArray(ast.meeting)
+        ? ast.meeting
+            .filter((line) => typeof line === "string" && /^<h[1-6]\b/i.test(line.trim()))
+            .map((line) => {
+              const match = line.match(/^<h([1-6])[^>]*>([\s\S]*?)<\/h\1>$/i);
+              return match
+                ? { level: Number(match[1]), text: match[2].replace(/<[^>]+>/g, "") }
+                : null;
+            })
+            .filter(Boolean)
+        : [];
+
+      if (!headings.length) {
+        outlineList.innerHTML = "<li>No headings in the current meeting block.</li>";
+        return;
+      }
+
+      outlineList.innerHTML = headings.map((item) => {
+        const indent = (item.level - 1) * 14;
+        return `<li style="margin-left:${indent}px;">${escapeHtml(item.text)}</li>`;
+      }).join("");
+    }
+
+    function renderIssues(warnings) {
+      if (!warnings.length) {
+        issueList.innerHTML = "<li><strong>OK</strong> No local issues detected.</li>";
+        return;
+      }
+
+      issueList.innerHTML = warnings.map((entry) => {
+        return `<li><strong>${escapeHtml(entry.severity)}</strong> ${escapeHtml(entry.message)}</li>`;
+      }).join("");
+    }
+
+    function renderInspector() {
+      if (!lastAnalysis) {
+        inspectorOutput.textContent = "";
+        return;
+      }
+
+      if (currentInspector === "tokens") {
+        inspectorOutput.textContent = JSON.stringify(lastAnalysis.tokens, null, 2);
+        return;
+      }
+
+      if (currentInspector === "analysis") {
+        inspectorOutput.textContent = JSON.stringify({
+          stats: lastAnalysis.stats,
+          warnings: lastAnalysis.warnings,
+          meta: lastAnalysis.ast.meta || {}
+        }, null, 2);
+        return;
+      }
+
+      inspectorOutput.textContent = JSON.stringify(lastAnalysis.ast, null, 2);
+    }
+
+    function setInspectorTab(name) {
+      currentInspector = name;
+      inspectorTabs.forEach((button) => {
+        button.classList.toggle("active", button.dataset.inspector === name);
+      });
+      renderInspector();
+    }
+
+    function persistState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          source: source.value,
+          filename: currentFilename,
+          outputMode: outputMode.value,
+          renderTheme: renderTheme.value,
+          previewTheme: previewTheme.value,
+          hideMeta: hideMetaToggle.checked,
+          autoRender: autoRender.checked
+        }));
+      } catch (error) {
+        console.warn("State persistence failed", error);
+      }
+    }
+
+    function loadPersistedState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const saved = JSON.parse(raw);
+        if (typeof saved.source === "string") {
+          source.value = saved.source;
+        }
+        if (typeof saved.filename === "string" && saved.filename.trim()) {
+          currentFilename = saved.filename.trim();
+          setStatus(`Restored: ${currentFilename}`);
+        }
+        if (typeof saved.outputMode === "string") {
+          outputMode.value = saved.outputMode;
+        }
+        if (typeof saved.renderTheme === "string") {
+          renderTheme.value = saved.renderTheme;
+        }
+        if (typeof saved.previewTheme === "string") {
+          previewTheme.value = saved.previewTheme;
+        }
+        if (typeof saved.hideMeta === "boolean") {
+          hideMetaToggle.checked = saved.hideMeta;
+        }
+        if (typeof saved.autoRender === "boolean") {
+          autoRender.checked = saved.autoRender;
+        }
+        return Boolean(saved.source);
+      } catch (error) {
+        console.warn("State restore failed", error);
+        return false;
+      }
+    }
+
+    function applyOutput(mode, payload) {
+      if (mode === "html") {
+        const html = injectPreviewChrome(payload, previewTheme.value);
+        previewWrap.style.display = "block";
+        textOutputWrap.style.display = "none";
+        preview.srcdoc = html;
+        lastRendered = { html, text: html, ...getOutputDescriptor(mode) };
+        return;
+      }
+
+      previewWrap.style.display = "none";
+      textOutputWrap.style.display = "block";
+      textOutput.textContent = payload;
+      lastRendered = { html: "", text: payload, ...getOutputDescriptor(mode) };
+    }
+
+    function renderDocument() {
+      try {
+        const analysis = ProtoParser.parseSource(source.value);
+        lastAnalysis = analysis;
+
+        const mode = outputMode.value;
+        let payload = "";
+
+        if (mode === "json") {
+          payload = ProtoParser.parseTextToJSON(source.value);
+        } else if (mode === "markdown") {
+          payload = ProtoParser.parseTextToMarkdown(source.value, {
+            hideMeta: hideMetaToggle.checked
+          });
+        } else if (mode === "text") {
+          payload = ProtoParser.parseTextToText(source.value, {
+            hideMeta: hideMetaToggle.checked
+          });
+        } else {
+          payload = ProtoParser.parseTextToHTML(source.value, {
+            theme: renderTheme.value || undefined,
+            hideMeta: hideMetaToggle.checked
+          });
+        }
+
+        applyOutput(mode, payload);
+        renderStats(analysis.stats);
+        renderOutline(analysis.ast);
+        renderIssues(analysis.warnings);
+        renderInspector();
+        setError("");
+        persistState();
+      } catch (error) {
+        lastAnalysis = null;
+        preview.srcdoc = "";
+        textOutput.textContent = "";
+        renderStats({});
+        outlineList.innerHTML = "";
+        issueList.innerHTML = "";
+        inspectorOutput.textContent = "";
+        setError(error && error.stack ? error.stack : String(error));
+      }
+    }
+
+    function applyBootstrap(payload) {
+      if (!payload || typeof payload !== "object") return;
+      if (typeof payload.source === "string") {
+        source.value = payload.source;
+      }
+      if (typeof payload.filename === "string" && payload.filename.trim()) {
+        currentFilename = payload.filename.trim();
+        setStatus(`Loaded: ${currentFilename}`);
+      } else {
+        setStatus("Loaded external source");
+      }
+      renderDocument();
+    }
+
+    function loadSample(name) {
+      const sample = samples[name] || samples.meeting;
+      source.value = sample.source;
+      currentFilename = sample.filename;
+      setStatus(`Loaded sample: ${currentFilename}`);
+      renderDocument();
+    }
+
+    function loadTextFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        source.value = String(reader.result || "");
+        currentFilename = file.name || "protocol.pml";
+        setStatus(`Loaded: ${currentFilename}`);
+        renderDocument();
+      };
+      reader.onerror = () => {
+        setError("Failed to read the selected file.");
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    fileInput.addEventListener("change", (event) => {
+      const [file] = event.target.files || [];
+      loadTextFile(file);
     });
 
-  function downloadFile(content, filename, mime) {
-    const blob = new Blob([content], { type: mime });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 500);
-  }
-</script>
+    renderButton.addEventListener("click", renderDocument);
 
+    sampleButton.addEventListener("click", () => {
+      loadSample(sampleSelect.value);
+    });
+
+    saveSourceButton.addEventListener("click", () => {
+      downloadFile(source.value, currentFilename, "text/plain");
+    });
+
+    saveOutputButton.addEventListener("click", () => {
+      if (!lastRendered.text && !lastRendered.html) {
+        renderDocument();
+      }
+      const baseName = currentFilename.replace(/\.[^.]+$/, "") || "protocol";
+      const content = lastRendered.text || lastRendered.html;
+      if (!content) return;
+      downloadFile(content, `${baseName}.${lastRendered.extension}`, lastRendered.mime);
+    });
+
+    copyOutputButton.addEventListener("click", () => {
+      const content = lastRendered.text || lastRendered.html;
+      copyText(content);
+    });
+
+    copyAnalysisButton.addEventListener("click", () => {
+      if (!lastAnalysis) return;
+      copyText(JSON.stringify(lastAnalysis, null, 2));
+    });
+
+    openPreviewButton.addEventListener("click", () => {
+      if (outputMode.value !== "html") {
+        outputMode.value = "html";
+        renderDocument();
+      }
+      if (!lastRendered.html) return;
+      const blob = new Blob([lastRendered.html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    });
+
+    previewTheme.addEventListener("change", () => {
+      if (outputMode.value === "html" && (lastRendered.html || source.value.trim())) {
+        renderDocument();
+      }
+      persistState();
+    });
+
+    renderTheme.addEventListener("change", () => {
+      if (outputMode.value === "html" && (lastRendered.html || source.value.trim())) {
+        renderDocument();
+      }
+      persistState();
+    });
+
+    hideMetaToggle.addEventListener("change", () => {
+      renderDocument();
+      persistState();
+    });
+
+    outputMode.addEventListener("change", () => {
+      renderDocument();
+    });
+
+    source.addEventListener("input", () => {
+      persistState();
+      if (autoRender.checked) {
+        renderDocument();
+      }
+    });
+
+    autoRender.addEventListener("change", persistState);
+
+    inspectorTabs.forEach((button) => {
+      button.addEventListener("click", () => {
+        setInspectorTab(button.dataset.inspector);
+      });
+    });
+
+    ["dragenter", "dragover"].forEach((eventName) => {
+      dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.add("active");
+      });
+    });
+
+    ["dragleave", "dragend", "drop"].forEach((eventName) => {
+      dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.remove("active");
+      });
+    });
+
+    dropzone.addEventListener("drop", (event) => {
+      const [file] = event.dataTransfer.files || [];
+      loadTextFile(file);
+    });
+
+    window.applyBootstrap = applyBootstrap;
+
+    (function bootstrap() {
+      const params = new URLSearchParams(window.location.search);
+      const sourceParam = params.get("source");
+      const filenameParam = params.get("filename");
+
+      if (sourceParam != null || filenameParam != null) {
+        applyBootstrap({
+          source: sourceParam || "",
+          filename: filenameParam || currentFilename
+        });
+        return;
+      }
+
+      const restored = loadPersistedState();
+      if (!restored) {
+        loadSample("meeting");
+        return;
+      }
+
+      renderDocument();
+    })();
+  </script>
+</body>
 </html>

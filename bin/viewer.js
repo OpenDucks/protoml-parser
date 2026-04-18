@@ -1,10 +1,10 @@
 const { app, BrowserWindow } = require("electron");
 const renderHTML  = require("../src/renders/html");
 const { parseFile } = require("../src/core/parser.js");
-const th = process.argv[3] || "default";
-const ast = parseFile(process.argv[2], {theme: th});
+const th = process.argv[3] || null;
+const ast = parseFile(process.argv[2], th ? { theme: th } : {});
 
-const html = renderHTML(ast);
+const html = renderHTML(ast, th ? { theme: th } : {});
 
 app.whenReady().then(() => {
   const win = new BrowserWindow({

@@ -1,5 +1,5 @@
 body {
-  font-family: Segoe UI, Tahoma, sans-serif;
+  font-family: "Segoe UI", Tahoma, sans-serif;
   background: #ffffff;
   color: #222222;
   margin: 0;
@@ -27,11 +27,11 @@ body {
 
 .page {
   padding: 1.4rem 1.8rem 2rem;
-  max-width: 900px;
+  max-width: 980px;
 }
 
 h1 {
-  font-size: 1.9rem;
+  font-size: 1.95rem;
   border-bottom: 2px solid #d9d9d9;
   padding-bottom: 0.4rem;
 }
@@ -40,6 +40,10 @@ h2 {
   font-size: 1.25rem;
   margin-top: 1.6rem;
   color: #0f4c81;
+}
+
+p, li {
+  line-height: 1.55;
 }
 
 pre {
@@ -54,6 +58,19 @@ code {
   font-family: Consolas, "Courier New", monospace;
 }
 
-ul li {
+.topic-meta {
+  color: #4f5b66;
+  margin-bottom: 1rem;
+}
+
+.toc-group {
+  margin-bottom: 1.3rem;
+}
+
+.toc-group h2 {
+  margin-bottom: 0.5rem;
+}
+
+ul li, ol li {
   margin-bottom: 0.35rem;
 }

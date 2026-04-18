@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Outputs And Rendering - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Outputs And Rendering</h1>
+        <p>ProtoML treats the source <code>.pml</code> file as structured input that can be rendered in several ways depending on audience and workflow.</p>
+        <h2>Supported outputs</h2>
+        <ul>
+          <li>HTML</li>
+          <li>PDF</li>
+          <li>JSON</li>
+          <li>Markdown</li>
+          <li>Text</li>
+        </ul>
+        <p>These outputs are not just format conversions. They represent different ways of consuming the same structured ProtoML source.</p>
+        <h2>Choosing the right output</h2>
+        <ul>
+          <li>HTML: best for rich presentation and macro-heavy output</li>
+          <li>PDF: best for distribution and archiving</li>
+          <li>JSON: best for tooling and post-processing</li>
+          <li>Markdown: best for readable lightweight documentation workflows</li>
+          <li>Text: best for minimal plain inspection</li>
+        </ul>
+        <h2>What each output emphasizes</h2>
+        <ul>
+          <li>HTML preserves the richest visual structure and is usually the best default rendering target</li>
+          <li>PDF is for stable sharing when the final layout should not depend on the reader's environment</li>
+          <li>JSON exposes the document structure so other tools can inspect or transform it</li>
+          <li>Markdown and text emphasize readability over interactive or styled output</li>
+        </ul>
+        <h2>Typical commands</h2>
+        <pre><code>protoparser "test.pml" html
+protoparser "test.pml" pdf
+protoparser "test.pml" json
+protoparser "test.pml" markdown
+protoparser "test.pml" text</code></pre>
+        <h2>Practical output choices</h2>
+        <ul>
+          <li>During authoring: HTML or the viewer</li>
+          <li>For handoff or sign-off: PDF</li>
+          <li>For integrations or post-processing: JSON</li>
+          <li>For lightweight text-first review: Markdown or text</li>
+        </ul>
+        <h2>Output path behavior</h2>
+        <ul>
+          <li>Without an explicit output name, ProtoML derives the output name from the input file</li>
+          <li>With <code>-output=&lt;name&gt;</code>, you choose the base filename</li>
+          <li>With a third positional argument, you can target a directory</li>
+          <li>Files with content imports may auto-render into format-specific subfolders</li>
+        </ul>
+        <p>This automatic path behavior is especially useful once documents start importing HTML or ProtoML snippets, because it avoids cluttering the source directory.</p>
+        <h2>Rendering and macros</h2>
+        <p>Macros are most valuable in HTML output. Markdown and text prioritize readability and intentionally avoid carrying across complex styling or embedded behavior.</p>
+        <h2>Themes and metadata visibility</h2>
+        <p>HTML and PDF output can be influenced either by an explicit CLI theme or by document metadata such as <code>@theme:dark</code>. Metadata output itself can be hidden with <code>-hideMeta</code> or <code>@hide_meta:true</code> when the rendered document should stay visually focused on the body content.</p>
+        <pre><code>protoparser "test.pml" html -theme=dark
+protoparser "test.pml" pdf -hideMeta</code></pre>
+        <h2>Output strategy for teams</h2>
+        <ul>
+          <li>Keep one authoritative <code>.pml</code> source</li>
+          <li>Choose HTML for day-to-day review</li>
+          <li>Generate PDF only when you need a stable distributable artifact</li>
+          <li>Use JSON when ProtoML should feed downstream tooling or reporting</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="03_cli_workflows.html">CLI Reference</a></li>
+          <li><a href="09_viewer_guide.html">Viewer Guide</a></li>
+          <li><a href="04_macros_guide.html">Macros Guide</a></li>
+          <li><a href="16_release_and_packaging.html">Release And Packaging</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

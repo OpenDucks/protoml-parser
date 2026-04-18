@@ -1,5 +1,6 @@
 const {
   convertHtmlToText,
+  getVisibleMetaEntries,
   isProbablyHtml,
   renderStructuredReference,
   renderTemplate,
@@ -17,7 +18,7 @@ function renderMeetingLine(line) {
   return isProbablyHtml(source) ? convertHtmlToText(source) : stripHtml(source);
 }
 
-function renderText(ast) {
+function renderText(ast, options = {}) {
   const out = [];
   const title = stripHtml(
     renderTemplate(ast.meta?.protocol || "Protocol - {{date}}", {
@@ -33,9 +34,7 @@ function renderText(ast) {
   out.push("=".repeat(title.length));
   out.push("");
 
-  const metaEntries = Object.entries(ast.meta || {}).filter(([key]) =>
-    !["protocol", "meeting_title", "title"].includes(key)
-  );
+  const metaEntries = getVisibleMetaEntries(ast, options);
   out.push(...renderSection("Meta", metaEntries.map(([key, value]) => `${key}: ${stripHtml(value)}`)));
 
   if (ast.participants && Object.keys(ast.participants).length) {

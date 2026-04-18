@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Markdown - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Markdown</h1>
+<div class="topic-meta">Topic: <code>markdown</code></div>
+<h2>Explanation</h2>
+<p>The <code>markdown</code> renderer exports a <code>.pml</code> document as a readable Markdown-oriented text file.</p>
+<p>It is intended for lightweight sharing, diffs, version review, and plain documentation workflows. Structured sections such as metadata, participants, subjects, tags, tasks, notes, references, attachments, and the resolved <code>@meeting</code> content are rendered into Markdown.</p>
+<p>HTML-heavy macro output is reduced into readable text where possible. JavaScript and CSS blocks are stripped from the Markdown export. The output file extension is <code>.md</code>.</p>
+<h2>Examples</h2>
+<pre><code>protoparser &quot;Meeting.pml&quot; markdown
+protoparser &quot;Meeting.pml&quot; markdown &quot;./markdown&quot;</code></pre>
+  </main>
+</body>
+</html>

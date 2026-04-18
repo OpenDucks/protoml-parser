@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Text - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Text</h1>
+<div class="topic-meta">Topic: <code>text</code></div>
+<h2>Explanation</h2>
+<p>The <code>text</code> renderer exports a <code>.pml</code> document as a plain text report.</p>
+<p>It is useful for terminal inspection, quick sharing, logging, and environments where HTML or PDF output is unnecessary. Structured sections such as metadata, participants, subjects, tags, tasks, notes, references, attachments, and the resolved <code>@meeting</code> content are rendered into plain text.</p>
+<p>HTML-heavy macro output is reduced into readable text where possible. JavaScript and CSS blocks are stripped from the text export. The output file extension is <code>.txt</code>.</p>
+<h2>Examples</h2>
+<pre><code>protoparser &quot;Meeting.pml&quot; text
+protoparser &quot;Meeting.pml&quot; text &quot;./text&quot;</code></pre>
+  </main>
+</body>
+</html>

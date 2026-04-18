@@ -3,15 +3,19 @@
 =docs:
 The `@macro` command imports a named macro file from a specified path, making it available for inline use with `@@macro=name:param=value`.
 
+This is the external-file counterpart to inline `@new_macro` definitions inside a normal `.pml` document.
+
 A macro file must begin with `@new_macro`, include a `=name:` declaration, and define a `=template:` block. Templates can contain `{{variable}}` placeholders that are replaced when the macro is called.
 
-Macros are especially useful for reusable content blocks, warnings, callouts, layout helpers, and injected logic such as buttons or dynamic fields.
+Macros are especially useful for reusable rendered components such as warnings, callouts, badges, cards, layout helpers, and injected logic such as buttons or dynamic fields.
+
+If you only want to change the overall document look, prefer a renderer theme instead of a macro.
 
 Templates can include JavaScript and HTML, which are only rendered in the `html` export. JavaScript is not stripped or sanitized.
 
 Paths should be wrapped in double quotes. This is strongly recommended when using `{{macro_dir}}`, because some shells may otherwise interpret characters before ProtoML receives the path.
 
-⚠️ **Security Notice**: Embedded JS in macros is powerful but potentially dangerous (e.g. XSS). Do not use untrusted macro files.
+⚠️ **Security Notice**: JavaScript and external URLs in macros downgrade trust immediately. Plain HTML alone is not a trust failure, but still means the macro is HTML-capable and should be reviewed.
 
 =examples:
 @macro warningBox "macros/warning.pml"

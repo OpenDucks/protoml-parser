@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Validation And Analysis Workflows - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Validation And Analysis Workflows</h1>
+        <p>ProtoML includes a second layer beyond rendering: commands that help you inspect document quality, structure, references, and governance state.</p>
+        <h2>Document validation</h2>
+        <pre><code>protoparser validate "meeting.pml"
+protoparser -v validate "meeting.pml"
+protoparser validate "meeting.pml" -trust=strict -trustRegistry="./my-registry"</code></pre>
+        <p>Use validation when you want to catch missing imports, missing macros, duplicate IDs, unresolved references, or untrusted macro usage before focusing on visual output.</p>
+        <h2>Trust inspection</h2>
+        <pre><code>protoparser trust "meeting.pml"
+protoparser -vv trust "meeting.pml" -trustRegistry="./my-registry"</code></pre>
+        <p>This is the best command when you want a dedicated trust report for the document, its used macros, and imported <code>.pml</code> files.</p>
+        <h2>Shared tag validation and statistics</h2>
+        <pre><code>protoparser tags "_tags.pml" validate
+protoparser tags "_tags.pml" statistics
+protoparser tags "_tags.pml" html</code></pre>
+        <p>This is useful when tags are a cross-document vocabulary and you want to understand how tasks are distributed across files.</p>
+        <h2>General document analysis</h2>
+        <pre><code>protoparser analyze "meeting.pml" statistics
+protoparser analyze "meeting.pml" html
+protoparser analyze "meeting.pml" graph</code></pre>
+        <p>Analysis is the best command when you need to understand imported content, merged structures, macro usage, or dependency shape.</p>
+        <h2>Graph output</h2>
+        <pre><code>protoparser analyze "meeting.pml" graph -graphView=full -graphDirection=LR
+protoparser analyze "meeting.pml" graph -output=meeting-graph</code></pre>
+        <p>Graph output is especially helpful once documents start importing other ProtoML files or building shared tag trees.</p>
+        <h2>Register workflow for directories</h2>
+        <pre><code>protoparser register "meetings" statistics
+protoparser register "meetings" html
+protoparser register "meetings" pdf</code></pre>
+        <p>Use register reports when you care about document inventory, missing metadata, overdue reviews, or open work across a folder.</p>
+        <p>This command does not manage macro registries or macro packs. For external macro catalogs and installed macro packages, use <code>macro_install</code> and the macro registry workflow instead.</p>
+        <h2>Macro usage inspection</h2>
+        <pre><code>protoparser macros "meeting.pml"</code></pre>
+        <p>This is useful for understanding which registered macros are actually used, especially before cleanup or pack refactors.</p>
+        <h2>Recommended quality workflow</h2>
+        <ol>
+          <li>Render the file for visual inspection</li>
+          <li>Run <code>validate</code> to catch structural issues</li>
+          <li>Run <code>analyze</code> when imports or cross-file structure matter</li>
+          <li>Run <code>tags ... statistics</code> when the shared task vocabulary matters</li>
+          <li>Run <code>register</code> across directories for governance-style collections</li>
+        </ol>
+        <h2>When each workflow matters most</h2>
+        <ul>
+          <li>Validation: before publishing or sharing</li>
+          <li>Analysis: when debugging structure or dependencies</li>
+          <li>Tag statistics: when workflow labels are part of reporting</li>
+          <li>Register reports: when the document set is managed like an inventory</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="03_cli_workflows.html">CLI Reference</a></li>
+          <li><a href="15_governance_documents.html">Governance Documents</a></li>
+          <li><a href="16_release_and_packaging.html">Release And Packaging</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

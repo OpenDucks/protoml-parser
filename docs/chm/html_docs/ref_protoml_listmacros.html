@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Protoml ListMacros - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    <h1>Protoml ListMacros</h1>
+<div class="topic-meta">Topic: <code>protoml-listMacros</code></div>
+<h2>Explanation</h2>
+<p>Lists all available macro files in a given directory. The command recursively searches for <code>.pml</code> macro definitions and prints their <code>=name:</code> and the first line of <code>=docs:</code>.</p>
+<p>Supports the <code>{{macro_dir}}</code> placeholder to reference internal macros.</p>
+<p>The directory path should generally be wrapped in double quotes, especially when using <code>{{macro_dir}}</code>.</p>
+<h2>Examples</h2>
+<pre><code>protoparser --listMacros &quot;{{macro_dir}}&quot;
+protoparser --listMacros &quot;./macros&quot;</code></pre>
+  </main>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Viewer Guide - ProtoML 1.4.2+build57</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build57</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Viewer Guide</h1>
+        <p>ProtoML now has two viewer paths: the Electron-based <code>protoviewer</code> and the browser-based independent viewer in <code>web/index.html</code>.</p>
+        <h2>Independent browser viewer</h2>
+        <p>The browser viewer gives you an editor, local file upload, drag-and-drop loading, in-browser preview, and HTML export without requiring Electron.</p>
+        <pre><code>npm run build:web
+protoparser viewer
+protoparser viewer app "./meeting.pml"
+protowebviewer "./meeting.pml"</code></pre>
+        <h2>Start the viewer</h2>
+        <pre><code>protoviewer "test.pml"
+protoviewer "test.pml" dark</code></pre>
+        <p>This is the fastest way to inspect the rendered shape of a document while you are still editing the source.</p>
+        <h2>When to use the viewer vs. CLI rendering</h2>
+        <ul>
+          <li>Use the browser viewer when you want an independent, cross-platform local workspace</li>
+          <li>Use <code>protoviewer</code> for immediate local review</li>
+          <li>Use <code>protoparser ... html|pdf|json|markdown|text</code> when you need export files or automation</li>
+        </ul>
+        <h2>Typical workflow</h2>
+        <ol>
+          <li>Edit the <code>.pml</code> file</li>
+          <li>Open it in <code>protoviewer</code> for local review</li>
+          <li>Use <code>protoparser</code> when you need distributable output</li>
+        </ol>
+        <h2>Limits</h2>
+        <ul>
+          <li>The viewer is a local GUI tool, not a publishing pipeline</li>
+          <li>It complements the CLI, but does not replace export or analysis commands</li>
+          <li>The browser viewer works from source text or uploaded files, not direct arbitrary filesystem path access</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="03_cli_workflows.html">CLI Reference</a></li>
+          <li><a href="10_outputs_and_rendering.html">Outputs And Rendering</a></li>
+          <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

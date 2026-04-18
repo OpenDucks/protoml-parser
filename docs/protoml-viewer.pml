@@ -7,6 +7,9 @@ It renders the HTML output of your parsed `.pml` file and is intended as a simpl
 
 Only HTML rendering is supported.
 
+For the independent browser-style workspace and standalone workbench window, see `protoml-webviewer`.
+For the integrated Help/Docs viewer, see `protoml-chm`.
+
 It is recommended to wrap the file path in double quotes.
 
 =examples:
