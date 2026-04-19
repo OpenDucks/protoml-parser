@@ -17,6 +17,8 @@ ProtoML now has two documentation layers:
 - orienting CHM guide pages in `docs/chm/html_docs/`
 - topic-by-topic built-in help in `docs/*.pml` for `protoparser --docs <topic>`
 
+- or use the GitHub Pages docs: [ProtoML Documentation](https://openducks.github.io/protoml-parser/chm/help-viewer.html?topic=html_docs%2F00_overview.html)
+
 Recommended reading order for new users:
 
 1. [Documentation Index](docs/chm/toc.html)
