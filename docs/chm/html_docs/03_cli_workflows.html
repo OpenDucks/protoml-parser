@@ -2,13 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>CLI Reference - ProtoML 1.4.2+build57</title>
+  <title>CLI Reference - ProtoML 1.4.2+build67</title>
   <link rel="stylesheet" href="help.css">
 </head>
 <body>
   <nav class="topnav">
     <a href="../toc.html">Contents</a>
-    <span class="version">ProtoML 1.4.2+build57</span>
+    <span class="version">ProtoML 1.4.2+build67</span>
   </nav>
   <main class="page">
     
@@ -55,14 +55,16 @@ protoparser chm download</code></pre>
         <h2>Trust and signing commands</h2>
         <pre><code>protoparser trust "test.pml"
 protoparser sign macro "./macros/warn_box.pml" "./keys/alice-private.pem" "Alice" alice-main
-protoparser verify macro "./macros/warn_box.pml" -trustRegistry="./my-registry"</code></pre>
-        <p>These commands provide the lightweight trust workflow: static risk checks, detached signatures, and author trust lookup via registry sources.</p>
+protoparser sign pml "./governance/release-approval.pml" "./keys/alice-private.pem" "Alice" alice-main
+protoparser verify macro "./macros/warn_box.pml" -trustRegistry="./my-registry"
+protoparser verify pml "./governance/release-approval.pml" -trustRegistry="./authors-registry"</code></pre>
+        <p>These commands provide the lightweight trust workflow: static risk checks, detached signatures, and author trust lookup via registry sources. The same detached signature model works for normal governance-style <code>.pml</code> files as well as macros.</p>
         <h2>Useful options</h2>
         <ul>
           <li><code>-v</code>, <code>-vv</code>, <code>-vvv</code> for verbosity on text-style reports</li>
           <li><code>-theme=&lt;name&gt;</code> for HTML and PDF themes</li>
           <li><code>-strict</code> for stricter validation behavior</li>
-          <li><code>-trust=off|warn|strict</code> and <code>-trustRegistry=...</code> for trust enforcement and author lookup</li>
+          <li><code>-trust=off|warn|strict</code> and repeatable <code>-trustRegistry=...</code> flags for trust enforcement and author lookup</li>
           <li><code>-graphView=&lt;mode&gt;</code> and <code>-graphDirection=&lt;dir&gt;</code> for graph rendering</li>
         </ul>
         <h2>Common workflow patterns</h2>
@@ -83,6 +85,7 @@ protoparser verify macro "./macros/warn_box.pml" -trustRegistry="./my-registry"<
           <li><a href="10_outputs_and_rendering.html">Outputs And Rendering</a></li>
           <li><a href="09_viewer_guide.html">Viewer Guide</a></li>
           <li><a href="05_windows_help_and_dev.html">Windows Help And Development</a></li>
+          <li><a href="15a_signed_governance_workflow.html">Signed Governance Workflow Tutorial</a></li>
         </ul>
       
   </main>

@@ -2,13 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Validate - ProtoML 1.4.2+build57</title>
+  <title>Validate - ProtoML 1.4.2+build67</title>
   <link rel="stylesheet" href="help.css">
 </head>
 <body>
   <nav class="topnav">
     <a href="../toc.html">Contents</a>
-    <span class="version">ProtoML 1.4.2+build57</span>
+    <span class="version">ProtoML 1.4.2+build67</span>
   </nav>
   <main class="page">
     <h1>Validate</h1>
@@ -20,14 +20,28 @@
 <ul>
 <li><code>-trust=warn</code> keeps rendering-style behavior and reports untrusted macros as warnings</li>
 <li><code>-trust=strict</code> upgrades trust violations to errors</li>
-<li><code>-trustRegistry=...</code> adds local or remote author trust sources</li>
+<li><code>-trustRegistry=...</code> adds extra author trust lookup sources for validation</li>
+<li><code>-trustRegistry=...</code> is repeatable, so you can combine multiple author or mixed registries</li>
+<li>package-only registries are allowed during validation; they simply contribute no author trust entries if <code>authors</code> is missing</li>
+<li>author-only registries are allowed during validation even when they publish no macro packages</li>
+<li>in <code>validate</code>, local registry directories and registry JSON files are used directly</li>
+<li>remote registry URLs are not fetched during synchronous validation and are reported only by the dedicated trust/verify workflow</li>
+<li>if the target file sits inside a project with <code>protoml.macros.json</code>, validation auto-discovers the nearest configured project registries even without <code>-trustRegistry=...</code></li>
+</ul>
+<p>Practical registry split:</p>
+<ul>
+<li>if macro packages come from one registry and trusted authors from another, pass both with separate <code>-trustRegistry=...</code> flags when they are not already listed in the nearest project config</li>
+<li>project registries stored in the nearest <code>protoml.macros.json</code> are included automatically by the trust analyzer unless that behavior is explicitly disabled in code</li>
+<li>validation merges all configured trust sources for author lookup and then checks used macros plus imported <code>.pml</code> files against that combined view</li>
 </ul>
 <p>Unsigned but otherwise harmless macros are treated as <code>unknown</code>, not as immediate failures.</p>
 <p>It is recommended to wrap the file path in double quotes.</p>
 <h2>Examples</h2>
 <pre><code>protoparser validate &quot;Meeting.pml&quot;
 protoparser -v validate &quot;Meeting.pml&quot;
+protoparser validate &quot;./project/Meeting.pml&quot; -trust=strict
 protoparser validate &quot;Meeting.pml&quot; -trust=strict -trustRegistry=&quot;./my-registry&quot;
+protoparser validate &quot;Meeting.pml&quot; -trust=strict -trustRegistry=&quot;./authors-registry&quot; -trustRegistry=&quot;./macro-registry&quot;
 protoparser tags &quot;_tags.pml&quot; validate</code></pre>
   </main>
 </body>

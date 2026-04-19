@@ -1,7 +1,7 @@
 {
   "name": "protoml-parser",
-  "version": "1.4.2+build57",
-  "build": 57,
+  "version": "1.4.2+build67",
+  "build": 67,
   "description": "ProtoML is a lightweight, declarative markup language designed for writing and structuring meeting protocols, notes and task lists in a human-readable and machine-parseable format.",
   "keywords": [
     "protoml",

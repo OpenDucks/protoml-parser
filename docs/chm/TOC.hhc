@@ -91,6 +91,35 @@
 			</OBJECT>
 	</UL>
 	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Workflow Guides">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Workflow 1: Board Approval Context">
+			<param name="Local" value="html_docs/15a_signed_governance_workflow.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Workflow 2: Build An Author-Only Registry">
+			<param name="Local" value="html_docs/15b_author_registry_workflow.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Workflow 3: Sign And Publish The Governance Document">
+			<param name="Local" value="html_docs/15c_sign_governance_workflow.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Workflow 4: Employee Validation And Trust Decision">
+			<param name="Local" value="html_docs/15d_validate_governance_workflow.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Workflow 5: Review A Governance Portfolio">
+			<param name="Local" value="html_docs/15e_governance_portfolio_workflow.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Workflow 7: Internal Author Trust Plus External Macro Registry">
+			<param name="Local" value="html_docs/15g_split_registry_workflow.html">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Reference: CLI And Tooling">
 		</OBJECT>
 	<UL>

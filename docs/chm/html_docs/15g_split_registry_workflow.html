@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow 7: Internal Author Trust Plus External Macro Registry - ProtoML 1.4.2+build67</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build67</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Workflow 7: Internal Author Trust Plus External Macro Registry</h1>
+        <p>This workflow handles the realistic mixed case: the company trusts its own internal signer registry, but macro delivery comes from a different registry maintained by another team or even an external source.</p>
+        <h2>The scenario</h2>
+        <p>Acme Inc. keeps trusted employees and board members in an internal author-only registry. At the same time, the document uses a reviewed macro pack from a separate macro registry. Lea needs both worlds in one validation flow.</p>
+        <h2>Two different sources, two different jobs</h2>
+        <ul>
+          <li>the internal registry answers: which authors are trusted signers?</li>
+          <li>the macro registry answers: where do the reusable macro packages come from?</li>
+        </ul>
+        <h2>One-company alternative</h2>
+        <p>If one company owns both concerns, it can also publish one mixed registry with both <code>authors</code> and <code>packages</code>. That mixed company registry can still live on a simple internal web server or on a shared network path.</p>
+        <pre><code>protoparser macro_install add_registry "https://intra.acme.local/protoml/protoml.registry.json"
+protoparser macro_install add_registry "Z:\protoml-registry"</code></pre>
+        <p>The split-registry model is useful when security ownership and package ownership are different. A mixed company registry is useful when one team reviews both.</p>
+        <h2>Validate with both sources</h2>
+        <pre><code>protoparser validate "./governance/release-checklist.pml" -trust=strict</code></pre>
+        <p>If both registry sources are already listed in the nearest project <code>protoml.macros.json</code>, ProtoML merges them automatically for author lookup. Registries without matching <code>authors</code> entries simply do not contribute to that part of the result.</p>
+        <h2>Inspect trust explicitly</h2>
+        <pre><code>protoparser trust "./governance/release-checklist.pml"</code></pre>
+        <p>This gives Lea the clearest report when something resolves to <code>unknown</code> or <code>untrusted</code>.</p>
+        <h2>Why this workflow matters</h2>
+        <ul>
+          <li>security ownership and package ownership can stay separate</li>
+          <li>teams do not have to force every concern into one giant registry</li>
+          <li>the validation command stays simple because project registries can be auto-discovered, while ad hoc flags still work for temporary sources</li>
+        </ul>
+        <h2>Decision heuristic</h2>
+        <ul>
+          <li>use one registry if one team owns both signer trust and macro delivery</li>
+          <li>split them when organizational responsibility is clearly different</li>
+          <li>prefer <code>trust</code> for investigation, <code>validate</code> for enforcement, and <code>verify</code> for direct signature checks</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="08_macro_registry_guide.html">Own Macro Registry Guide</a></li>
+          <li><a href="13_macro_security_trust_model.html">Macro Security And Trust Model</a></li>
+          <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
+          <li><a href="15f_release_ops_workflow.html">Workflow 6: Release Operations Without A Board Story</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

@@ -52,11 +52,12 @@ function normalizeRegistrySource(source, baseDir = process.cwd()) {
 
   const rawSource = source.source || source.path || source.url;
   if (!rawSource) return null;
+  const effectiveBaseDir = source.baseDir || baseDir;
 
   return {
     source: rawSource,
     local: !isUrl(rawSource),
-    resolvedSource: isUrl(rawSource) ? rawSource : path.resolve(baseDir, rawSource),
+    resolvedSource: isUrl(rawSource) ? rawSource : path.resolve(effectiveBaseDir, rawSource),
   };
 }
 
@@ -169,9 +170,26 @@ async function loadRegistrySourceAsync(source, baseDir = process.cwd()) {
   };
 }
 
+function findNearestProjectRegistryConfig(startDir = process.cwd()) {
+  let currentDir = path.resolve(startDir);
+
+  while (true) {
+    const configFile = path.join(currentDir, "protoml.macros.json");
+    if (fs.existsSync(configFile)) {
+      return configFile;
+    }
+
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) {
+      return null;
+    }
+    currentDir = parentDir;
+  }
+}
+
 function gatherDefaultRegistrySources(baseDir = process.cwd()) {
-  const configFile = path.join(baseDir, "protoml.macros.json");
-  if (!fs.existsSync(configFile)) {
+  const configFile = findNearestProjectRegistryConfig(baseDir);
+  if (!configFile) {
     return [];
   }
 
@@ -179,8 +197,61 @@ function gatherDefaultRegistrySources(baseDir = process.cwd()) {
   if (!Array.isArray(config.registries)) {
     return [];
   }
+  const configDir = path.dirname(configFile);
 
-  return config.registries;
+  return config.registries.map((entry) => {
+    if (typeof entry === "string") {
+      return { source: entry, baseDir: configDir };
+    }
+
+    if (entry && typeof entry === "object") {
+      const source = entry.source || entry.path || entry.url;
+      return source ? { ...entry, source, baseDir: configDir } : entry;
+    }
+
+    return entry;
+  }).filter(Boolean);
+}
+
+function dedupeRegistrySources(sources) {
+  const seen = new Set();
+  const result = [];
+
+  for (const source of Array.isArray(sources) ? sources : []) {
+    const key = typeof source === "string"
+      ? source
+      : JSON.stringify(source);
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    result.push(source);
+  }
+
+  return result;
+}
+
+function getDefaultRegistryBaseDir(filePath, fallbackDir = process.cwd()) {
+  if (!filePath) {
+    return fallbackDir;
+  }
+
+  const absoluteFile = path.resolve(filePath);
+  return fs.existsSync(absoluteFile) && fs.statSync(absoluteFile).isDirectory()
+    ? absoluteFile
+    : path.dirname(absoluteFile);
+}
+
+function resolveConfiguredRegistrySources(filePath, options = {}) {
+  const explicitSources = Array.isArray(options.registrySources) ? options.registrySources : [];
+  const discoveredSources = options.includeProjectRegistries === false
+    ? []
+    : gatherDefaultRegistrySources(getDefaultRegistryBaseDir(filePath, process.cwd()));
+
+  return dedupeRegistrySources([
+    ...explicitSources,
+    ...discoveredSources,
+  ]);
 }
 
 function normalizePublicKeyPem(value) {
@@ -598,10 +669,7 @@ function analyzePmlTrustSync(filename, options = {}, visited = new Set()) {
 
   visited.add(visitKey);
 
-  const configuredSources = [
-    ...(Array.isArray(options.registrySources) ? options.registrySources : []),
-    ...(options.includeProjectRegistries === false ? [] : gatherDefaultRegistrySources(process.cwd())),
-  ];
+  const configuredSources = resolveConfiguredRegistrySources(fullPath, options);
   const registrySources = configuredSources
     .map((source) => loadRegistrySourceSync(source, process.cwd()))
     .filter(Boolean);
@@ -668,10 +736,7 @@ async function analyzePmlTrust(filename, options = {}) {
   const baseDir = path.dirname(fullPath);
   const raw = fs.readFileSync(fullPath, "utf8");
   const ast = parseBlocks(tokenize(raw));
-  const registrySourceInputs = [
-    ...(Array.isArray(options.registrySources) ? options.registrySources : []),
-    ...(options.includeProjectRegistries === false ? [] : gatherDefaultRegistrySources(process.cwd())),
-  ];
+  const registrySourceInputs = resolveConfiguredRegistrySources(fullPath, options);
   const registrySources = (await Promise.all(
     registrySourceInputs.map((source) => loadRegistrySourceAsync(source, process.cwd()).catch((error) => ({
       source: typeof source === "string" ? source : source?.source || null,
@@ -795,10 +860,7 @@ function signFile(filePath, type, privateKeyPath, author, keyId = "") {
 
 function verifyFileTrustSync(filePath, type, options = {}) {
   const absoluteFile = path.resolve(filePath);
-  const configuredSources = [
-    ...(Array.isArray(options.registrySources) ? options.registrySources : []),
-    ...(options.includeProjectRegistries === false ? [] : gatherDefaultRegistrySources(process.cwd())),
-  ];
+  const configuredSources = resolveConfiguredRegistrySources(absoluteFile, options);
   const registrySources = configuredSources
     .map((source) => loadRegistrySourceSync(source, process.cwd()))
     .filter(Boolean);
@@ -833,10 +895,7 @@ function verifyFileTrustSync(filePath, type, options = {}) {
 
 async function verifyFileTrust(filePath, type, options = {}) {
   const absoluteFile = path.resolve(filePath);
-  const configuredSources = [
-    ...(Array.isArray(options.registrySources) ? options.registrySources : []),
-    ...(options.includeProjectRegistries === false ? [] : gatherDefaultRegistrySources(process.cwd())),
-  ];
+  const configuredSources = resolveConfiguredRegistrySources(absoluteFile, options);
   const registrySources = (await Promise.all(
     configuredSources.map((source) => loadRegistrySourceAsync(source, process.cwd()).catch((error) => ({
       source: typeof source === "string" ? source : source?.source || null,

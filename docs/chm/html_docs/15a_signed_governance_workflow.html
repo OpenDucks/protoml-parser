@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow 1: Board Approval Context - ProtoML 1.4.2+build67</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build67</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Workflow 1: Board Approval Context</h1>
+        <p>This workflow series follows one continuous story. Acme Inc. is preparing a release that requires formal Board of Directors approval. The company wants the final governance document to be both readable as ProtoML and verifiable as a signed file.</p>
+        <h2>The story</h2>
+        <p>The board secretariat authors the document. The board chair signs it. Employees in Release Operations and Compliance later verify it before using it. The trust source is an author-only registry reviewed internally by the company.</p>
+        <h2>Step 1: Write the governance document</h2>
+        <pre><code>@protocol "Board Release Approval - Q2"
+
+@author:Board Secretariat
+@version:1.0.0
+@status:approved
+@record_id:BOD-2026-0419
+@confidentiality:internal
+@effective_date:19.04.2026
+@review_date:19.10.2026
+
+@signatures
+=chair:Jane Director,Board Chair,19.04.2026,Signed after board vote
+
+@approvals
+=release:Release Approval,approved,Jane Director,19.04.2026,Approved for distribution
+
+@meeting "Resolution"
+# Release approval
+The Board of Directors approves Release 2026.04 for distribution.
+
+@@signature=chair
+@@approval=release
+@@ref=meta:record_id</code></pre>
+        <p>The ProtoML content still carries the normal governance meaning for readers. The detached signature added later will protect the file as an artifact.</p>
+        <h2>Why this document shape matters</h2>
+        <ul>
+          <li>the governance fields support register-style portfolio reporting</li>
+          <li>the embedded approvals and signatures remain readable in rendered output</li>
+          <li>the document is ready for detached file signing in the next workflow step</li>
+        </ul>
+        <h2>Continue with</h2>
+        <p>Next, the board secretariat publishes the trusted signer list in <a href="15b_author_registry_workflow.html">Workflow 2: Build An Author-Only Registry</a>.</p>
+      
+  </main>
+</body>
+</html>

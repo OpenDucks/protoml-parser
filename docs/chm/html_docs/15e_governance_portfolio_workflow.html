@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow 5: Review A Governance Portfolio - ProtoML 1.4.2+build67</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build67</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Workflow 5: Review A Governance Portfolio</h1>
+        <p>After validating one signed board approval file, Lea now has a broader operational question: is the surrounding governance portfolio in good shape, or are there other documents that are overdue, incomplete, or missing metadata?</p>
+        <h2>The scenario shift</h2>
+        <p>This step is no longer mainly about one signer. It is about the health of a whole governance collection such as release approvals, procedures, onboarding records, and policy documents.</p>
+        <h2>Run a register report across the directory</h2>
+        <pre><code>protoparser register "./governance" statistics
+protoparser register "./governance" html</code></pre>
+        <p>This gives Lea a governance-oriented portfolio view rather than a single-file trust result.</p>
+        <h2>What Lea is looking for</h2>
+        <ul>
+          <li>documents missing <code>@record_id</code>, <code>@author</code>, <code>@version</code>, or <code>@status</code></li>
+          <li>documents whose <code>@review_date</code> is due or overdue</li>
+          <li>documents whose <code>@valid_until</code> has expired</li>
+          <li>documents that still contain open tasks or unresolved follow-up work</li>
+        </ul>
+        <h2>Why this matters after trust validation</h2>
+        <p>A file can be signed correctly and still be operationally weak if governance metadata is stale or missing. Trust answers "can I trust this artifact?", while register reporting helps answer "is the governance set being managed properly?"</p>
+        <h2>Typical follow-up</h2>
+        <p>If the portfolio report looks healthy, Release Operations can proceed confidently. If not, Lea may need a more practical release-facing workflow that combines governance, validation, and packaging checks for one concrete release package.</p>
+        <h2>Continue with</h2>
+        <p>That next step is covered in <a href="15f_release_ops_workflow.html">Workflow 6: Release Operations Without A Board Story</a>.</p>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="15_governance_documents.html">Governance Documents</a></li>
+          <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
+          <li><a href="16_release_and_packaging.html">Release And Packaging</a></li>
+          <li><a href="03_cli_workflows.html">CLI Reference</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>

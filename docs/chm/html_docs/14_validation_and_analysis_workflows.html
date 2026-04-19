@@ -2,13 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Validation And Analysis Workflows - ProtoML 1.4.2+build57</title>
+  <title>Validation And Analysis Workflows - ProtoML 1.4.2+build67</title>
   <link rel="stylesheet" href="help.css">
 </head>
 <body>
   <nav class="topnav">
     <a href="../toc.html">Contents</a>
-    <span class="version">ProtoML 1.4.2+build57</span>
+    <span class="version">ProtoML 1.4.2+build67</span>
   </nav>
   <main class="page">
     
@@ -17,12 +17,16 @@
         <h2>Document validation</h2>
         <pre><code>protoparser validate "meeting.pml"
 protoparser -v validate "meeting.pml"
-protoparser validate "meeting.pml" -trust=strict -trustRegistry="./my-registry"</code></pre>
-        <p>Use validation when you want to catch missing imports, missing macros, duplicate IDs, unresolved references, or untrusted macro usage before focusing on visual output.</p>
+protoparser validate "meeting.pml" -trust=strict -trustRegistry="./authors-registry" -trustRegistry="./macro-registry"</code></pre>
+        <p>Use validation when you want to catch missing imports, missing macros, duplicate IDs, unresolved references, or untrusted macro usage before focusing on visual output. The <code>-trustRegistry=...</code> flag is repeatable, so validation can merge multiple trust sources when authors and packages are split across different registries.</p>
         <h2>Trust inspection</h2>
         <pre><code>protoparser trust "meeting.pml"
-protoparser -vv trust "meeting.pml" -trustRegistry="./my-registry"</code></pre>
+protoparser -vv trust "meeting.pml" -trustRegistry="./authors-registry" -trustRegistry="./macro-registry"</code></pre>
         <p>This is the best command when you want a dedicated trust report for the document, its used macros, and imported <code>.pml</code> files.</p>
+        <h2>Signed governance documents</h2>
+        <pre><code>protoparser sign pml "./governance/release-approval.pml" "./keys/alice-private.pem" "Alice" alice-main
+protoparser verify pml "./governance/release-approval.pml" -trustRegistry="./authors-registry"</code></pre>
+        <p>Normal ProtoML documents can be signed too. That is useful for controlled governance files such as release approvals, operational procedures, policy texts, and reviewable internal records.</p>
         <h2>Shared tag validation and statistics</h2>
         <pre><code>protoparser tags "_tags.pml" validate
 protoparser tags "_tags.pml" statistics

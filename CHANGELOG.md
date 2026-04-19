@@ -2,6 +2,9 @@
 
 ## v1.4.2
 
+- Clarified that normal `.pml` files can be signed and verified too, especially for governance-style workflows such as approvals, release records, procedures, and policy documents.
+- Documented that registries may be package-only, author-only, or mixed, and that trust-oriented commands can combine multiple `-trustRegistry=...` sources.
+- Clarified validation behavior for split registries: repeated `-trustRegistry=...` flags are merged for author lookup, while package-only registries are simply ignored by trust resolution if they do not publish `authors`.
 - Clarified CHM and built-in docs so `register` is no longer confused with macro registries and `macro_install ..._registry` workflows.
 - Added built-in macro trust-by-origin for shipped bundled macros: known macros from the built-in macro directory can resolve to `trusted` without detached signatures when their shipped hash matches and they do not trigger hard risk flags.
 - Prevented accidental trust escalation for modified or extra files in the built-in macro directory by checking real file origin plus a built-in hash manifest instead of trusting `{{macro_dir}}` usage alone.

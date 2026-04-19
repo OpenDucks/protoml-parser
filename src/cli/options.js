@@ -554,7 +554,7 @@ Options:
   -graphDirection=<dir>   Set Mermaid graph direction (TD, LR, RL, BT)
   -strict                 Enable strict parsing
   -trust=<mode>           Set trust mode (off, warn, strict)
-  -trustRegistry=<src>    Add trust registry source (file, dir, or URL)
+  -trustRegistry=<src>    Add extra author trust lookup source (repeatable; registry file, dir, or URL)
   --listMacros "<dir>"      List available macros (e.g. {{macro_dir}})
   --macroHelp "<file>"      Show macro help from file
   --listMacrosJson "<dir>"  Output all macros as JSON array (with docs/template)
@@ -573,9 +573,13 @@ Examples:
   protoparser analyze Meeting.pml graph
   protoparser analyze Meeting.pml graph -graphView=full -graphDirection=LR
   protoparser validate Meeting.pml
+  protoparser trust Meeting.pml
   protoparser trust Meeting.pml -trustRegistry=./my-registry
   protoparser sign macro ./macros/warn_box.pml ./keys/alice-private.pem Alice alice-main
+  protoparser sign pml ./meetings/board.pml ./keys/alice-private.pem Alice alice-main
+  protoparser verify macro ./macros/warn_box.pml
   protoparser verify macro ./macros/warn_box.pml -trustRegistry=./my-registry
+  protoparser validate Meeting.pml -trust=strict -trustRegistry=./authors-registry -trustRegistry=./macro-registry
   protoparser tags _tags.pml validate
   protoparser macros Meeting.pml
   protoparser macro_install init

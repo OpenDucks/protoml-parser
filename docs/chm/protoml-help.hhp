@@ -8,10 +8,11 @@ Full-text search=Yes
 Index file=Index.hhk
 Language=0x409 English (United States)
 Title=ProtoML Help
-Version=1.4.2+build57
+Version=1.4.2+build67
 
 [FILES]
 toc.html
+toc.embedded.html
 help-viewer.html
 TOC.hhc
 Index.hhk
@@ -33,6 +34,12 @@ html_docs/12_reference_map.html
 html_docs/13_macro_security_trust_model.html
 html_docs/14_validation_and_analysis_workflows.html
 html_docs/15_governance_documents.html
+html_docs/15a_signed_governance_workflow.html
+html_docs/15b_author_registry_workflow.html
+html_docs/15c_sign_governance_workflow.html
+html_docs/15d_validate_governance_workflow.html
+html_docs/15e_governance_portfolio_workflow.html
+html_docs/15g_split_registry_workflow.html
 html_docs/16_release_and_packaging.html
 html_docs/ref_analyze.html
 html_docs/ref_approval.html

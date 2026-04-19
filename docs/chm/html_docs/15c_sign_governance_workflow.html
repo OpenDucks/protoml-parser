@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow 3: Sign And Publish The Governance Document - ProtoML 1.4.2+build67</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build67</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Workflow 3: Sign And Publish The Governance Document</h1>
+        <p>The board chair now signs the final approval file so employees can later verify both integrity and authorship.</p>
+        <h2>If the signer key does not exist yet</h2>
+        <pre><code>openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out "./keys/jane-director-private.pem"
+openssl rsa -pubout -in "./keys/jane-director-private.pem" -out "./keys/jane-director-public.pem"</code></pre>
+        <p>The public key should already be published in the board author registry before employees start validating released files.</p>
+        <h2>Sign the file</h2>
+        <pre><code>protoparser sign pml "./governance/board-release-approval.pml" "./keys/jane-director-private.pem" "Jane Director" board-chair-2026</code></pre>
+        <p>This creates a detached <code>board-release-approval.pml.sig.json</code> file next to the document.</p>
+        <h2>What gets distributed internally</h2>
+        <ul>
+          <li>the governance document file</li>
+          <li>its matching <code>*.sig.json</code> sidecar</li>
+          <li>the author-only registry file or its internal URL</li>
+        </ul>
+        <p>If the document does not depend on external macro packs, employees do not need any macro package registry to validate this story.</p>
+        <h2>Operational note</h2>
+        <p>The detached signature does not replace <code>@signatures</code> or <code>@approvals</code> inside the ProtoML content. It complements them by protecting the file as a file.</p>
+        <h2>Continue with</h2>
+        <p>Now the document reaches Release Operations. Lea validates it in <a href="15d_validate_governance_workflow.html">Workflow 4: Employee Validation And Trust Decision</a>.</p>
+      
+  </main>
+</body>
+</html>
