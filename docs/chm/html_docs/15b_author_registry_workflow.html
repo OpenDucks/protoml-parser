@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow 2: Build An Author-Only Registry - ProtoML 1.4.2+build67</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build67</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Workflow 2: Build An Author-Only Registry</h1>
+        <p>Acme Inc. does not need a full macro package registry for this governance story. It only needs one reviewed trust source that says which board members are trusted signers and which public keys belong to them.</p>
+        <h2>The registry</h2>
+        <p>The board secretariat maintains one internal registry whose only real job is trust lookup for approved signers.</p>
+        <h2>Bootstrap the key pair first</h2>
+        <p>Before the registry can publish trusted signers, each signer needs a private key for signing and a public key for verification.</p>
+        <pre><code>openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out "./keys/jane-director-private.pem"
+openssl rsa -pubout -in "./keys/jane-director-private.pem" -out "./keys/jane-director-public.pem"</code></pre>
+        <p>The private key stays with Jane Director. The exported public key is what the board secretariat copies into the registry JSON.</p>
+        <pre><code>{
+  "version": 1,
+  "name": "acme-board-authors",
+  "authors": [
+    {
+      "name": "Jane Director",
+      "trust": "trusted",
+      "keys": [
+        {
+          "id": "board-chair-2026",
+          "public_key": "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
+        }
+      ]
+    },
+    {
+      "name": "Martin Director",
+      "trust": "trusted",
+      "keys": [
+        {
+          "id": "board-member-2026",
+          "public_key": "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
+        }
+      ]
+    }
+  ],
+  "packages": []
+}</code></pre>
+        <p>This is still a valid ProtoML registry. It is simply author-focused rather than package-focused.</p>
+        <h2>Why this works</h2>
+        <ul>
+          <li>trust-oriented commands only need the <code>authors</code> list for signer lookup</li>
+          <li>an empty <code>packages</code> list is acceptable when this registry is not used for macro delivery</li>
+          <li>the registry can be published on an internal file share or internal HTTPS endpoint</li>
+        </ul>
+        <h2>Company hosting choices</h2>
+        <p>Acme Inc. can publish this registry in two equally simple ways:</p>
+        <ul>
+          <li>as an internal URL such as <code>https://intra.acme.local/protoml/protoml.registry.json</code></li>
+          <li>as a shared path such as <code>Z:\board-registry</code> or <code>/mnt/board-registry</code></li>
+        </ul>
+        <p>In both cases the content is still just static JSON. The difference is only how employees reach it.</p>
+        <h2>Continue with</h2>
+        <p>Once the trusted author registry exists, the board chair signs the final ProtoML file in <a href="15c_sign_governance_workflow.html">Workflow 3: Sign And Publish The Governance Document</a>.</p>
+      
+  </main>
+</body>
+</html>

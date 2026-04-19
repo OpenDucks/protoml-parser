@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow 4: Employee Validation And Trust Decision - ProtoML 1.4.2+build67</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2+build67</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Workflow 4: Employee Validation And Trust Decision</h1>
+        <p>Lea from Release Operations receives the document and wants to know whether it is intact and actually signed by a trusted board member.</p>
+        <h2>Verify the file cryptographically</h2>
+        <p>Her first step is a direct cryptographic verification against the board author registry.</p>
+        <pre><code>protoparser verify pml "./governance/board-release-approval.pml"</code></pre>
+        <p>If the nearest project <code>protoml.macros.json</code> already lists the board registry, this checks the detached signature cryptographically and also looks up the signer without extra flags.</p>
+        <h2>Inspect the full trust result</h2>
+        <pre><code>protoparser trust "./governance/board-release-approval.pml"</code></pre>
+        <p>This is the better command when Lea wants the full trust picture, including document-level trust classification and any imported ProtoML dependencies. Extra <code>-trustRegistry=...</code> flags are only needed when the project config does not already list every relevant source.</p>
+        <h2>Run strict validation before reuse</h2>
+        <pre><code>protoparser validate "./governance/board-release-approval.pml" -trust=strict</code></pre>
+        <p>This catches structural issues too, not just signature issues. The nearest project <code>protoml.macros.json</code> is used automatically when present.</p>
+        <h2>What if registries are split?</h2>
+        <p>Some companies separate responsibilities:</p>
+        <ul>
+          <li>the board secretariat owns the author-only registry</li>
+          <li>the platform team owns a macro/package registry</li>
+        </ul>
+        <p>Then the employee can combine them:</p>
+        <pre><code>protoparser validate "./governance/board-release-approval.pml" -trust=strict -trustRegistry="./board-authors-registry" -trustRegistry="./macro-registry"</code></pre>
+        <p>ProtoML merges the provided trust sources for author lookup. Registries that have no relevant <code>authors</code> entries simply add nothing to that part of the result.</p>
+        <h2>How to read the outcome</h2>
+        <ul>
+          <li><code>trusted</code>: the file matches its signature and the signer is trusted in the registry</li>
+          <li><code>unknown</code>: the signature may be valid, but the signer is not matched to a trusted registry author</li>
+          <li><code>untrusted</code>: the signature is invalid, the signer is marked untrusted, or dependent trust checks fail</li>
+        </ul>
+        <h2>Why this workflow works well</h2>
+        <ul>
+          <li>the board can stay focused on people and approvals instead of package delivery</li>
+          <li>employees get one repeatable CLI workflow for validation</li>
+          <li>directory-level register reports still complement the file-level trust story</li>
+          <li>the same signing model also works for other governance documents such as policies, onboarding approvals, or audit records</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="15_governance_documents.html">Governance Documents</a></li>
+          <li><a href="13_macro_security_trust_model.html">Macro Security And Trust Model</a></li>
+          <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
+          <li><a href="08_macro_registry_guide.html">Own Macro Registry Guide</a></li>
+        </ul>
+        <h2>Continue with</h2>
+        <p>Once Lea trusts the single file, the next question is usually broader: which governance documents across the portfolio are missing metadata, overdue, or still open? Continue with <a href="15e_governance_portfolio_workflow.html">Workflow 5: Review A Governance Portfolio</a>.</p>
+      
+  </main>
+</body>
+</html>

@@ -11,6 +11,7 @@ const projectFile = path.join(chmDir, "protoml-help.hhp");
 const tocFile = path.join(chmDir, "TOC.hhc");
 const indexFile = path.join(chmDir, "Index.hhk");
 const tocHtmlFile = path.join(chmDir, "toc.html");
+const embeddedTocHtmlFile = path.join(chmDir, "toc.embedded.html");
 const helpViewerFile = path.join(chmDir, "help-viewer.html");
 const stylesFile = path.join(htmlDocsDir, "help.css");
 const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, "package.json"), "utf8"));
@@ -458,14 +459,16 @@ protoparser chm download</code></pre>
         <h2>Trust and signing commands</h2>
         <pre><code>protoparser trust "test.pml"
 protoparser sign macro "./macros/warn_box.pml" "./keys/alice-private.pem" "Alice" alice-main
-protoparser verify macro "./macros/warn_box.pml" -trustRegistry="./my-registry"</code></pre>
-        <p>These commands provide the lightweight trust workflow: static risk checks, detached signatures, and author trust lookup via registry sources.</p>
+protoparser sign pml "./governance/release-approval.pml" "./keys/alice-private.pem" "Alice" alice-main
+protoparser verify macro "./macros/warn_box.pml" -trustRegistry="./my-registry"
+protoparser verify pml "./governance/release-approval.pml" -trustRegistry="./authors-registry"</code></pre>
+        <p>These commands provide the lightweight trust workflow: static risk checks, detached signatures, and author trust lookup via registry sources. The same detached signature model works for normal governance-style <code>.pml</code> files as well as macros.</p>
         <h2>Useful options</h2>
         <ul>
           <li><code>-v</code>, <code>-vv</code>, <code>-vvv</code> for verbosity on text-style reports</li>
           <li><code>-theme=&lt;name&gt;</code> for HTML and PDF themes</li>
           <li><code>-strict</code> for stricter validation behavior</li>
-          <li><code>-trust=off|warn|strict</code> and <code>-trustRegistry=...</code> for trust enforcement and author lookup</li>
+          <li><code>-trust=off|warn|strict</code> and repeatable <code>-trustRegistry=...</code> flags for trust enforcement and author lookup</li>
           <li><code>-graphView=&lt;mode&gt;</code> and <code>-graphDirection=&lt;dir&gt;</code> for graph rendering</li>
         </ul>
         <h2>Common workflow patterns</h2>
@@ -486,6 +489,7 @@ protoparser verify macro "./macros/warn_box.pml" -trustRegistry="./my-registry"<
           <li><a href="10_outputs_and_rendering.html">Outputs And Rendering</a></li>
           <li><a href="09_viewer_guide.html">Viewer Guide</a></li>
           <li><a href="05_windows_help_and_dev.html">Windows Help And Development</a></li>
+          <li><a href="15a_signed_governance_workflow.html">Signed Governance Workflow Tutorial</a></li>
         </ul>
       `,
     },
@@ -818,6 +822,13 @@ snippets/
         <h2>What this workflow is for</h2>
         <p>Use a custom macro registry when you want a reusable, curated macro catalog for one team, one company, or one document domain instead of copying macro files between repositories.</p>
         <p>This guide is about macro package registries only. It is not about <code>protoparser register "&lt;dir&gt;"</code>, which creates governance and status reports for document collections.</p>
+        <h2>Where a company registry can live</h2>
+        <ul>
+          <li>a simple internal web server that serves <code>protoml.registry.json</code> and pack files over HTTP or HTTPS</li>
+          <li>a shared local path such as <code>Z:\\protoml-registry</code> or <code>/mnt/protoml-registry</code></li>
+          <li>an intranet static host or normal artifact/file server</li>
+        </ul>
+        <p>You do not need a special registry backend. A company registry can be just static JSON plus files on a plain web server or network path.</p>
         <h2>Choose the right trust path first</h2>
         <ul>
           <li>Use bundled <code>{{macro_dir}}</code> macros first when the shipped macro set already covers the need</li>
@@ -904,6 +915,14 @@ protoparser macro_install sync</code></pre>
   "packages": []
 }</code></pre>
         <p>After that, consumers can run <code>verify</code> or <code>trust</code> with <code>-trustRegistry=...</code> and the macro can resolve to <code>trusted</code> if it has no hard risk flags such as JavaScript or external URLs.</p>
+        <h2>Registries can be split or combined</h2>
+        <p>A ProtoML registry does not have to do everything at once. A registry may publish:</p>
+        <ul>
+          <li>package entries in <code>packages</code> for install, sync, and search workflows</li>
+          <li>author trust entries in <code>authors</code> for trust, verify, and validate workflows</li>
+          <li>or both in one combined registry</li>
+        </ul>
+        <p>That means teams can keep macro delivery in one registry and trusted authors in another if that better matches their release and security process.</p>
         <h2>Recommended trust-aware workflow</h2>
         <ol>
           <li>Start with bundled macros when possible</li>
@@ -945,9 +964,15 @@ protoparser macro_install sync</code></pre>
         <ol>
           <li>Add the remote registry to the project with <code>protoparser macro_install add_registry "https://example.org/protoml.registry.json"</code> if it should be part of the project config</li>
           <li>Search it explicitly with <code>protoparser macro_install search "meeting" "https://example.org/protoml.registry.json"</code> if it should only be queried ad hoc</li>
-          <li>Use <code>-trustRegistry=...</code> with <code>trust</code>, <code>verify</code>, or <code>validate -trust=...</code> when the remote registry should also act as an author trust source</li>
+          <li>Use repeatable <code>-trustRegistry=...</code> flags with <code>trust</code>, <code>verify</code>, or <code>validate -trust=...</code> when one or more registries should act as author trust sources</li>
           <li>Review the registry owner and pack maintainers before treating the registry as trusted</li>
         </ol>
+        <h2>Local company registry variant</h2>
+        <p>Some teams do not want HTTP hosting at all. In that case, the same registry can live in a shared directory or mounted network path.</p>
+        <pre><code>protoparser macro_install add_registry "Z:\\protoml-registry"
+protoparser macro_install add_registry "/mnt/protoml-registry"
+protoparser validate "./governance/release-checklist.pml" -trust=strict -trustRegistry="Z:\\protoml-registry"</code></pre>
+        <p>This works well for internal-only environments where a reviewed file share or NFS path is easier to operate than a hosted web endpoint.</p>
         <h2>Operational notes</h2>
         <ul>
           <li>Remote registries are best for discovery and trust lookup first</li>
@@ -976,6 +1001,7 @@ protoparser macro_install sync</code></pre>
           <li><a href="03_cli_workflows.html">CLI Reference</a></li>
           <li><a href="11_examples_cookbook.html">Examples Cookbook</a></li>
           <li><a href="13_macro_security_trust_model.html">Macro Security And Trust Model</a></li>
+          <li><a href="15a_signed_governance_workflow.html">Signed Governance Workflow Tutorial</a></li>
         </ul>
       `,
     },
@@ -1279,12 +1305,16 @@ protoparser verify macro "./macros/warn_box.pml" -trustRegistry="./my-registry"<
         <h2>Document validation</h2>
         <pre><code>protoparser validate "meeting.pml"
 protoparser -v validate "meeting.pml"
-protoparser validate "meeting.pml" -trust=strict -trustRegistry="./my-registry"</code></pre>
-        <p>Use validation when you want to catch missing imports, missing macros, duplicate IDs, unresolved references, or untrusted macro usage before focusing on visual output.</p>
+protoparser validate "meeting.pml" -trust=strict -trustRegistry="./authors-registry" -trustRegistry="./macro-registry"</code></pre>
+        <p>Use validation when you want to catch missing imports, missing macros, duplicate IDs, unresolved references, or untrusted macro usage before focusing on visual output. The <code>-trustRegistry=...</code> flag is repeatable, so validation can merge multiple trust sources when authors and packages are split across different registries.</p>
         <h2>Trust inspection</h2>
         <pre><code>protoparser trust "meeting.pml"
-protoparser -vv trust "meeting.pml" -trustRegistry="./my-registry"</code></pre>
+protoparser -vv trust "meeting.pml" -trustRegistry="./authors-registry" -trustRegistry="./macro-registry"</code></pre>
         <p>This is the best command when you want a dedicated trust report for the document, its used macros, and imported <code>.pml</code> files.</p>
+        <h2>Signed governance documents</h2>
+        <pre><code>protoparser sign pml "./governance/release-approval.pml" "./keys/alice-private.pem" "Alice" alice-main
+protoparser verify pml "./governance/release-approval.pml" -trustRegistry="./authors-registry"</code></pre>
+        <p>Normal ProtoML documents can be signed too. That is useful for controlled governance files such as release approvals, operational procedures, policy texts, and reviewable internal records.</p>
         <h2>Shared tag validation and statistics</h2>
         <pre><code>protoparser tags "_tags.pml" validate
 protoparser tags "_tags.pml" statistics
@@ -1361,6 +1391,10 @@ protoparser register "meetings" pdf</code></pre>
         <pre><code>@@signature=lead
 @@approval=security
 @@ref=meta:record_id</code></pre>
+        <h2>Detached signatures for governance files</h2>
+        <pre><code>protoparser sign pml "./governance/release-approval.pml" "./keys/alice-private.pem" "Alice" alice-main
+protoparser verify pml "./governance/release-approval.pml" -trustRegistry="./authors-registry"</code></pre>
+        <p>Detached file signatures complement the in-document governance blocks. They help prove the integrity and authorship of the whole <code>.pml</code> file without replacing semantic fields such as <code>@signatures</code>, <code>@approvals</code>, or review metadata.</p>
         <h2>Supporting sections</h2>
         <ul>
           <li><code>@references</code> for source material or governing documents</li>
@@ -1390,6 +1424,314 @@ protoparser register "meetings" pdf</code></pre>
           <li><a href="07_authoring_guide.html">Authoring Guide</a></li>
           <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
           <li><a href="13_macro_security_trust_model.html">Macro Security And Trust Model</a></li>
+        </ul>
+      `,
+    },
+    {
+      file: "15a_signed_governance_workflow.html",
+      title: "Workflow 1: Board Approval Context",
+      group: "Workflow Guides",
+      keywords: ["workflow", "tutorial", "governance signing", "board of directors", "author-only registry", "practical example"],
+      body: `
+        <h1>Workflow 1: Board Approval Context</h1>
+        <p>This workflow series follows one continuous story. Acme Inc. is preparing a release that requires formal Board of Directors approval. The company wants the final governance document to be both readable as ProtoML and verifiable as a signed file.</p>
+        <h2>The story</h2>
+        <p>The board secretariat authors the document. The board chair signs it. Employees in Release Operations and Compliance later verify it before using it. The trust source is an author-only registry reviewed internally by the company.</p>
+        <h2>Step 1: Write the governance document</h2>
+        <pre><code>@protocol "Board Release Approval - Q2"
+
+@author:Board Secretariat
+@version:1.0.0
+@status:approved
+@record_id:BOD-2026-0419
+@confidentiality:internal
+@effective_date:19.04.2026
+@review_date:19.10.2026
+
+@signatures
+=chair:Jane Director,Board Chair,19.04.2026,Signed after board vote
+
+@approvals
+=release:Release Approval,approved,Jane Director,19.04.2026,Approved for distribution
+
+@meeting "Resolution"
+# Release approval
+The Board of Directors approves Release 2026.04 for distribution.
+
+@@signature=chair
+@@approval=release
+@@ref=meta:record_id</code></pre>
+        <p>The ProtoML content still carries the normal governance meaning for readers. The detached signature added later will protect the file as an artifact.</p>
+        <h2>Why this document shape matters</h2>
+        <ul>
+          <li>the governance fields support register-style portfolio reporting</li>
+          <li>the embedded approvals and signatures remain readable in rendered output</li>
+          <li>the document is ready for detached file signing in the next workflow step</li>
+        </ul>
+        <h2>Continue with</h2>
+        <p>Next, the board secretariat publishes the trusted signer list in <a href="15b_author_registry_workflow.html">Workflow 2: Build An Author-Only Registry</a>.</p>
+      `,
+    },
+    {
+      file: "15b_author_registry_workflow.html",
+      title: "Workflow 2: Build An Author-Only Registry",
+      group: "Workflow Guides",
+      keywords: ["workflow", "author registry", "trusted authors", "public keys", "board of directors"],
+      body: `
+        <h1>Workflow 2: Build An Author-Only Registry</h1>
+        <p>Acme Inc. does not need a full macro package registry for this governance story. It only needs one reviewed trust source that says which board members are trusted signers and which public keys belong to them.</p>
+        <h2>The registry</h2>
+        <p>The board secretariat maintains one internal registry whose only real job is trust lookup for approved signers.</p>
+        <h2>Bootstrap the key pair first</h2>
+        <p>Before the registry can publish trusted signers, each signer needs a private key for signing and a public key for verification.</p>
+        <pre><code>openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out "./keys/jane-director-private.pem"
+openssl rsa -pubout -in "./keys/jane-director-private.pem" -out "./keys/jane-director-public.pem"</code></pre>
+        <p>The private key stays with Jane Director. The exported public key is what the board secretariat copies into the registry JSON.</p>
+        <pre><code>{
+  "version": 1,
+  "name": "acme-board-authors",
+  "authors": [
+    {
+      "name": "Jane Director",
+      "trust": "trusted",
+      "keys": [
+        {
+          "id": "board-chair-2026",
+          "public_key": "-----BEGIN PUBLIC KEY-----\\n...\\n-----END PUBLIC KEY-----"
+        }
+      ]
+    },
+    {
+      "name": "Martin Director",
+      "trust": "trusted",
+      "keys": [
+        {
+          "id": "board-member-2026",
+          "public_key": "-----BEGIN PUBLIC KEY-----\\n...\\n-----END PUBLIC KEY-----"
+        }
+      ]
+    }
+  ],
+  "packages": []
+}</code></pre>
+        <p>This is still a valid ProtoML registry. It is simply author-focused rather than package-focused.</p>
+        <h2>Why this works</h2>
+        <ul>
+          <li>trust-oriented commands only need the <code>authors</code> list for signer lookup</li>
+          <li>an empty <code>packages</code> list is acceptable when this registry is not used for macro delivery</li>
+          <li>the registry can be published on an internal file share or internal HTTPS endpoint</li>
+        </ul>
+        <h2>Company hosting choices</h2>
+        <p>Acme Inc. can publish this registry in two equally simple ways:</p>
+        <ul>
+          <li>as an internal URL such as <code>https://intra.acme.local/protoml/protoml.registry.json</code></li>
+          <li>as a shared path such as <code>Z:\\board-registry</code> or <code>/mnt/board-registry</code></li>
+        </ul>
+        <p>In both cases the content is still just static JSON. The difference is only how employees reach it.</p>
+        <h2>Continue with</h2>
+        <p>Once the trusted author registry exists, the board chair signs the final ProtoML file in <a href="15c_sign_governance_workflow.html">Workflow 3: Sign And Publish The Governance Document</a>.</p>
+      `,
+    },
+    {
+      file: "15c_sign_governance_workflow.html",
+      title: "Workflow 3: Sign And Publish The Governance Document",
+      group: "Workflow Guides",
+      keywords: ["workflow", "sign pml", "governance document", "publish signed file", "board approval"],
+      body: `
+        <h1>Workflow 3: Sign And Publish The Governance Document</h1>
+        <p>The board chair now signs the final approval file so employees can later verify both integrity and authorship.</p>
+        <h2>If the signer key does not exist yet</h2>
+        <pre><code>openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out "./keys/jane-director-private.pem"
+openssl rsa -pubout -in "./keys/jane-director-private.pem" -out "./keys/jane-director-public.pem"</code></pre>
+        <p>The public key should already be published in the board author registry before employees start validating released files.</p>
+        <h2>Sign the file</h2>
+        <pre><code>protoparser sign pml "./governance/board-release-approval.pml" "./keys/jane-director-private.pem" "Jane Director" board-chair-2026</code></pre>
+        <p>This creates a detached <code>board-release-approval.pml.sig.json</code> file next to the document.</p>
+        <h2>What gets distributed internally</h2>
+        <ul>
+          <li>the governance document file</li>
+          <li>its matching <code>*.sig.json</code> sidecar</li>
+          <li>the author-only registry file or its internal URL</li>
+        </ul>
+        <p>If the document does not depend on external macro packs, employees do not need any macro package registry to validate this story.</p>
+        <h2>Operational note</h2>
+        <p>The detached signature does not replace <code>@signatures</code> or <code>@approvals</code> inside the ProtoML content. It complements them by protecting the file as a file.</p>
+        <h2>Continue with</h2>
+        <p>Now the document reaches Release Operations. Lea validates it in <a href="15d_validate_governance_workflow.html">Workflow 4: Employee Validation And Trust Decision</a>.</p>
+      `,
+    },
+    {
+      file: "15d_validate_governance_workflow.html",
+      title: "Workflow 4: Employee Validation And Trust Decision",
+      group: "Workflow Guides",
+      keywords: ["workflow", "verify pml", "trust pml", "validate pml", "employee validation", "compliance"],
+      body: `
+        <h1>Workflow 4: Employee Validation And Trust Decision</h1>
+        <p>Lea from Release Operations receives the document and wants to know whether it is intact and actually signed by a trusted board member.</p>
+        <h2>Verify the file cryptographically</h2>
+        <p>Her first step is a direct cryptographic verification against the board author registry.</p>
+        <pre><code>protoparser verify pml "./governance/board-release-approval.pml"</code></pre>
+        <p>If the nearest project <code>protoml.macros.json</code> already lists the board registry, this checks the detached signature cryptographically and also looks up the signer without extra flags.</p>
+        <h2>Inspect the full trust result</h2>
+        <pre><code>protoparser trust "./governance/board-release-approval.pml"</code></pre>
+        <p>This is the better command when Lea wants the full trust picture, including document-level trust classification and any imported ProtoML dependencies. Extra <code>-trustRegistry=...</code> flags are only needed when the project config does not already list every relevant source.</p>
+        <h2>Run strict validation before reuse</h2>
+        <pre><code>protoparser validate "./governance/board-release-approval.pml" -trust=strict</code></pre>
+        <p>This catches structural issues too, not just signature issues. The nearest project <code>protoml.macros.json</code> is used automatically when present.</p>
+        <h2>What if registries are split?</h2>
+        <p>Some companies separate responsibilities:</p>
+        <ul>
+          <li>the board secretariat owns the author-only registry</li>
+          <li>the platform team owns a macro/package registry</li>
+        </ul>
+        <p>Then the employee can combine them:</p>
+        <pre><code>protoparser validate "./governance/board-release-approval.pml" -trust=strict -trustRegistry="./board-authors-registry" -trustRegistry="./macro-registry"</code></pre>
+        <p>ProtoML merges the provided trust sources for author lookup. Registries that have no relevant <code>authors</code> entries simply add nothing to that part of the result.</p>
+        <h2>How to read the outcome</h2>
+        <ul>
+          <li><code>trusted</code>: the file matches its signature and the signer is trusted in the registry</li>
+          <li><code>unknown</code>: the signature may be valid, but the signer is not matched to a trusted registry author</li>
+          <li><code>untrusted</code>: the signature is invalid, the signer is marked untrusted, or dependent trust checks fail</li>
+        </ul>
+        <h2>Why this workflow works well</h2>
+        <ul>
+          <li>the board can stay focused on people and approvals instead of package delivery</li>
+          <li>employees get one repeatable CLI workflow for validation</li>
+          <li>directory-level register reports still complement the file-level trust story</li>
+          <li>the same signing model also works for other governance documents such as policies, onboarding approvals, or audit records</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="15_governance_documents.html">Governance Documents</a></li>
+          <li><a href="13_macro_security_trust_model.html">Macro Security And Trust Model</a></li>
+          <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
+          <li><a href="08_macro_registry_guide.html">Own Macro Registry Guide</a></li>
+        </ul>
+        <h2>Continue with</h2>
+        <p>Once Lea trusts the single file, the next question is usually broader: which governance documents across the portfolio are missing metadata, overdue, or still open? Continue with <a href="15e_governance_portfolio_workflow.html">Workflow 5: Review A Governance Portfolio</a>.</p>
+      `,
+    },
+    {
+      file: "15e_governance_portfolio_workflow.html",
+      title: "Workflow 5: Review A Governance Portfolio",
+      group: "Workflow Guides",
+      keywords: ["workflow", "register", "governance portfolio", "document inventory", "review dates", "record_id"],
+      body: `
+        <h1>Workflow 5: Review A Governance Portfolio</h1>
+        <p>After validating one signed board approval file, Lea now has a broader operational question: is the surrounding governance portfolio in good shape, or are there other documents that are overdue, incomplete, or missing metadata?</p>
+        <h2>The scenario shift</h2>
+        <p>This step is no longer mainly about one signer. It is about the health of a whole governance collection such as release approvals, procedures, onboarding records, and policy documents.</p>
+        <h2>Run a register report across the directory</h2>
+        <pre><code>protoparser register "./governance" statistics
+protoparser register "./governance" html</code></pre>
+        <p>This gives Lea a governance-oriented portfolio view rather than a single-file trust result.</p>
+        <h2>What Lea is looking for</h2>
+        <ul>
+          <li>documents missing <code>@record_id</code>, <code>@author</code>, <code>@version</code>, or <code>@status</code></li>
+          <li>documents whose <code>@review_date</code> is due or overdue</li>
+          <li>documents whose <code>@valid_until</code> has expired</li>
+          <li>documents that still contain open tasks or unresolved follow-up work</li>
+        </ul>
+        <h2>Why this matters after trust validation</h2>
+        <p>A file can be signed correctly and still be operationally weak if governance metadata is stale or missing. Trust answers "can I trust this artifact?", while register reporting helps answer "is the governance set being managed properly?"</p>
+        <h2>Typical follow-up</h2>
+        <p>If the portfolio report looks healthy, Release Operations can proceed confidently. If not, Lea may need a more practical release-facing workflow that combines governance, validation, and packaging checks for one concrete release package.</p>
+        <h2>Continue with</h2>
+        <p>That next step is covered in <a href="15f_release_ops_workflow.html">Workflow 6: Release Operations Without A Board Story</a>.</p>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="15_governance_documents.html">Governance Documents</a></li>
+          <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
+          <li><a href="16_release_and_packaging.html">Release And Packaging</a></li>
+          <li><a href="03_cli_workflows.html">CLI Reference</a></li>
+        </ul>
+      `,
+    },
+    /*{
+      file: "15f_release_ops_workflow.html",
+      title: "Workflow 6: Release Operations Without A Board Story",
+      group: "Workflow Guides",
+      keywords: ["workflow", "release operations", "validate", "release checks", "practical release", "ops"],
+      body: `
+        <h1>Workflow 6: Release Operations Without A Board Story</h1>
+        <p>Not every workflow revolves around Board approval. Sometimes Release Operations just needs a practical, low-drama process for checking a release package, its supporting ProtoML records, and the generated artifacts before publication.</p>
+        <h2>The scenario</h2>
+        <p>Lea is now working on the operational release checklist itself. This file may not need a board signature at all. It still needs to be structurally valid, internally reviewable, and consistent with the generated release artifacts.</p>
+        <h2>Validate the release record</h2>
+        <pre><code>protoparser validate "./governance/release-checklist.pml" -trust=warn</code></pre>
+        <p>Here the goal is not necessarily strict signature enforcement. The goal is to catch structural problems before publishing.</p>
+        <h2>Inspect the release-related document set</h2>
+        <pre><code>protoparser register "./governance" statistics</code></pre>
+        <p>This gives Lea confidence that the current release record sits inside a healthy governance set.</p>
+        <h2>Check the release artifacts themselves</h2>
+        <pre><code>npm run build:web
+npm run build:chm
+npm run build:exe</code></pre>
+        <p>And before publishing:</p>
+        <pre><code>npm run bump</code></pre>
+        <h2>Why this workflow is different</h2>
+        <ul>
+          <li>it is about release readiness, not primarily signer identity</li>
+          <li>trust checks may still matter, but they are only one part of the release checklist</li>
+          <li>artifact consistency, CHM behavior, and checksum correctness are equally important</li>
+        </ul>
+        <h2>When the registry story comes back</h2>
+        <p>If the release record uses external macros, or if trust lookups come from more than one place, Lea may need to combine an internal author registry with a separate macro registry.</p>
+        <h2>Continue with</h2>
+        <p>That combined case is covered in <a href="15g_split_registry_workflow.html">Workflow 7: Internal Author Trust Plus External Macro Registry</a>.</p>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="16_release_and_packaging.html">Release And Packaging</a></li>
+          <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
+          <li><a href="08_macro_registry_guide.html">Own Macro Registry Guide</a></li>
+          <li><a href="13_macro_security_trust_model.html">Macro Security And Trust Model</a></li>
+        </ul>
+      `,
+    },*/
+    {
+      file: "15g_split_registry_workflow.html",
+      title: "Workflow 7: Internal Author Trust Plus External Macro Registry",
+      group: "Workflow Guides",
+      keywords: ["workflow", "split registry", "author registry", "macro registry", "internal trust", "external packages"],
+      body: `
+        <h1>Workflow 7: Internal Author Trust Plus External Macro Registry</h1>
+        <p>This workflow handles the realistic mixed case: the company trusts its own internal signer registry, but macro delivery comes from a different registry maintained by another team or even an external source.</p>
+        <h2>The scenario</h2>
+        <p>Acme Inc. keeps trusted employees and board members in an internal author-only registry. At the same time, the document uses a reviewed macro pack from a separate macro registry. Lea needs both worlds in one validation flow.</p>
+        <h2>Two different sources, two different jobs</h2>
+        <ul>
+          <li>the internal registry answers: which authors are trusted signers?</li>
+          <li>the macro registry answers: where do the reusable macro packages come from?</li>
+        </ul>
+        <h2>One-company alternative</h2>
+        <p>If one company owns both concerns, it can also publish one mixed registry with both <code>authors</code> and <code>packages</code>. That mixed company registry can still live on a simple internal web server or on a shared network path.</p>
+        <pre><code>protoparser macro_install add_registry "https://intra.acme.local/protoml/protoml.registry.json"
+protoparser macro_install add_registry "Z:\\protoml-registry"</code></pre>
+        <p>The split-registry model is useful when security ownership and package ownership are different. A mixed company registry is useful when one team reviews both.</p>
+        <h2>Validate with both sources</h2>
+        <pre><code>protoparser validate "./governance/release-checklist.pml" -trust=strict</code></pre>
+        <p>If both registry sources are already listed in the nearest project <code>protoml.macros.json</code>, ProtoML merges them automatically for author lookup. Registries without matching <code>authors</code> entries simply do not contribute to that part of the result.</p>
+        <h2>Inspect trust explicitly</h2>
+        <pre><code>protoparser trust "./governance/release-checklist.pml"</code></pre>
+        <p>This gives Lea the clearest report when something resolves to <code>unknown</code> or <code>untrusted</code>.</p>
+        <h2>Why this workflow matters</h2>
+        <ul>
+          <li>security ownership and package ownership can stay separate</li>
+          <li>teams do not have to force every concern into one giant registry</li>
+          <li>the validation command stays simple because project registries can be auto-discovered, while ad hoc flags still work for temporary sources</li>
+        </ul>
+        <h2>Decision heuristic</h2>
+        <ul>
+          <li>use one registry if one team owns both signer trust and macro delivery</li>
+          <li>split them when organizational responsibility is clearly different</li>
+          <li>prefer <code>trust</code> for investigation, <code>validate</code> for enforcement, and <code>verify</code> for direct signature checks</li>
+        </ul>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="08_macro_registry_guide.html">Own Macro Registry Guide</a></li>
+          <li><a href="13_macro_security_trust_model.html">Macro Security And Trust Model</a></li>
+          <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
+          <li><a href="15f_release_ops_workflow.html">Workflow 6: Release Operations Without A Board Story</a></li>
         </ul>
       `,
     },
@@ -1612,10 +1954,13 @@ ul li, ol li {
 `;
 }
 
-function buildTocHtml() {
+function buildTocHtml(linkTarget = null) {
   const groupsHtml = tocGroups.map((group) => {
     const items = group.pages
-      .map((page) => `<li><a href="html_docs/${page.file}">${escapeHtml(page.title)}</a></li>`)
+      .map((page) => {
+        const targetAttr = linkTarget ? ` target="${escapeAttribute(linkTarget)}"` : "";
+        return `<li><a href="html_docs/${page.file}"${targetAttr}>${escapeHtml(page.title)}</a></li>`;
+      })
       .join("\n");
     return `<section class="toc-group">
   <h2>${escapeHtml(group.name)}</h2>
@@ -1739,11 +2084,11 @@ function buildHelpViewerHtml() {
     <main class="workspace">
       <section class="panel">
         <div class="panel-head">Contents</div>
-        <iframe id="tocFrame" src="toc.html" title="ProtoML help contents"></iframe>
+        <iframe id="tocFrame" name="tocFrame" src="toc.embedded.html" title="ProtoML help contents"></iframe>
       </section>
       <section class="panel">
         <div class="panel-head" id="topicLabel">Topic</div>
-        <iframe id="contentFrame" src="html_docs/00_overview.html" title="ProtoML help content"></iframe>
+        <iframe id="contentFrame" name="contentFrame" src="html_docs/00_overview.html" title="ProtoML help content"></iframe>
       </section>
     </main>
   </div>
@@ -1869,6 +2214,7 @@ ${items}
 function buildHhp() {
   const fileList = [
     "toc.html",
+    "toc.embedded.html",
     "help-viewer.html",
     "TOC.hhc",
     "Index.hhk",
@@ -1903,6 +2249,7 @@ function generateChmDocs() {
 
   writeFile(stylesFile, buildStyles());
   writeFile(tocHtmlFile, buildTocHtml());
+  writeFile(embeddedTocHtmlFile, buildTocHtml("contentFrame"));
   writeFile(helpViewerFile, buildHelpViewerHtml());
   writeFile(tocFile, buildHhc());
   writeFile(indexFile, buildHhk());

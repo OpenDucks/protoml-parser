@@ -2,13 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Verify - ProtoML 1.4.2+build57</title>
+  <title>Verify - ProtoML 1.4.2+build67</title>
   <link rel="stylesheet" href="help.css">
 </head>
 <body>
   <nav class="topnav">
     <a href="../toc.html">Contents</a>
-    <span class="version">ProtoML 1.4.2+build57</span>
+    <span class="version">ProtoML 1.4.2+build67</span>
   </nav>
   <main class="page">
     <h1>Verify</h1>
@@ -20,8 +20,18 @@
 <li>cryptographic verification of the sidecar signature</li>
 <li>optional author trust lookup against one or more trust registries</li>
 </ul>
-<p>Without a registry source, ProtoML can still verify whether the file matches its signature. With <code>-trustRegistry=...</code>, it can also classify the author as <code>trusted</code>, <code>untrusted</code>, or <code>unknown</code>.</p>
+<p>Without a registry source, ProtoML can still verify whether the file matches its signature. With <code>-trustRegistry=...</code>, it can also classify the author as <code>trusted</code>, <code>untrusted</code>, or <code>unknown</code>. <code>-trustRegistry=...</code> is a lookup flag, not a separate subcommand. You can point it at a registry directory, a registry JSON file, or an HTTP/HTTPS registry URL. The flag is repeatable, so you can provide more than one registry source. If the target file sits inside a project with <code>protoml.macros.json</code>, ProtoML also auto-discovers the nearest configured project registries and uses them even without the flag.</p>
 <p>For bundled built-in macros, trust can also come from the built-in hash manifest even when no detached signature exists. <code>verify</code> still reports detached-signature state explicitly, so a built-in macro may be trusted by origin while still showing a missing signature sidecar.</p>
+<p>How to read verification results precisely:</p>
+<ul>
+<li>signature validity and author trust are related but separate</li>
+<li>a valid signature with no matching registry author usually stays <code>unknown</code></li>
+<li>a valid signature plus an author marked <code>trusted</code> can elevate external content to <code>trusted</code></li>
+<li>an author marked <code>untrusted</code> downgrades the result to <code>untrusted</code></li>
+<li>hard risk flags are still authoritative in the full trust workflow, so verification alone is not the whole policy story for macros</li>
+<li>package-only registries are harmless during verification because author trust lookup only consumes the registry <code>authors</code> list</li>
+<li>author-only registries are also valid trust sources even when they do not publish any macro packages</li>
+</ul>
 <p>Detached sidecar workflow outside a registry:</p>
 <p>Author side:</p>
 <ul>
@@ -36,7 +46,9 @@
 </ul>
 <h2>Examples</h2>
 <pre><code>protoparser verify macro &quot;./macros/warn_box.pml&quot;
+protoparser verify pml &quot;./governance/board.pml&quot;
 protoparser verify macro &quot;./macros/warn_box.pml&quot; -trustRegistry=&quot;./my-registry&quot;
+protoparser verify macro &quot;./macros/warn_box.pml&quot; -trustRegistry=&quot;./authors-registry&quot; -trustRegistry=&quot;./package-registry&quot;
 protoparser verify pml &quot;./meetings/board.pml&quot; -trustRegistry=&quot;https://example.org/protoml.registry.json&quot;
 protoparser verify macro &quot;./shared/warn_box.pml&quot;</code></pre>
   </main>

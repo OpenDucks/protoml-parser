@@ -2,19 +2,24 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Sign - ProtoML 1.4.2+build57</title>
+  <title>Sign - ProtoML 1.4.2+build67</title>
   <link rel="stylesheet" href="help.css">
 </head>
 <body>
   <nav class="topnav">
     <a href="../toc.html">Contents</a>
-    <span class="version">ProtoML 1.4.2+build57</span>
+    <span class="version">ProtoML 1.4.2+build67</span>
   </nav>
   <main class="page">
     <h1>Sign</h1>
 <div class="topic-meta">Topic: <code>sign</code></div>
 <h2>Explanation</h2>
 <p><code>protoparser sign &lt;macro|pml&gt; &lt;file&gt; &lt;private_key.pem&gt; &lt;author&gt; [key_id]</code> creates a detached RSA-SHA256 signature file next to the target.</p>
+<p>This works for both:</p>
+<ul>
+<li>macro files used in rendering workflows</li>
+<li>normal <code>.pml</code> files used in governance, approval, release, policy, and record workflows</li>
+</ul>
 <p>Examples:</p>
 <ul>
 <li><code>warning.pml</code> becomes <code>warning.pml.sig.json</code></li>
@@ -30,20 +35,38 @@
 </ul>
 <p>This keeps ProtoML source files clean and avoids adding extra inline signature syntax to the language itself.</p>
 <p>Registry-backed workflow:</p>
-<p>1. create or reuse an RSA private key 2. sign the macro file 3. publish the matching public key in the registry <code>authors</code> section 4. run <code>verify</code> or <code>trust</code> with <code>-trustRegistry=...</code></p>
+<p>1. create or reuse an RSA private key 2. export the matching public key in PEM format 3. sign the macro file or the governance <code>.pml</code> file 4. publish the matching public key in the registry <code>authors</code> section 5. run <code>verify</code> or <code>trust</code>, either through the nearest project <code>protoml.macros.json</code> or with explicit <code>-trustRegistry=...</code></p>
+<p>Key bootstrap with OpenSSL:</p>
+<p>Create a private key at a chosen export path:</p>
+<p><code>openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out &quot;./keys/jane-director-private.pem&quot;</code></p>
+<p>Export the matching public key at a chosen path:</p>
+<p><code>openssl rsa -pubout -in &quot;./keys/jane-director-private.pem&quot; -out &quot;./keys/jane-director-public.pem&quot;</code></p>
+<p>Typical governance bootstrap:</p>
+<ul>
+<li>keep the private key only with the signer, for example <code>./keys/jane-director-private.pem</code></li>
+<li>export the public key to a distributable path, for example <code>./keys/jane-director-public.pem</code></li>
+<li>copy the public key contents into the registry <code>authors[].keys[].public_key</code> field</li>
+<li>keep a stable <code>key_id</code> such as <code>board-chair-2026</code> so users can match signatures to rotated keys later</li>
+</ul>
 <p>Detached sidecar workflow outside a registry:</p>
 <p>Author side:</p>
 <ul>
 <li>create or reuse an RSA private key</li>
-<li>run <code>protoparser sign macro ...</code></li>
-<li>distribute both the macro file and the generated <code>*.sig.json</code> sidecar together</li>
+<li>export the matching public key PEM if users should be able to verify the file without a registry</li>
+<li>run <code>protoparser sign macro ...</code> or <code>protoparser sign pml ...</code></li>
+<li>distribute both the signed file and the generated <code>*.sig.json</code> sidecar together</li>
 <li>distribute the public key to users through a documented channel</li>
 </ul>
 <p>User side:</p>
 <ul>
-<li>keep the macro file and its matching <code>*.sig.json</code> file together</li>
-<li>run <code>protoparser verify macro ...</code> to verify the detached signature cryptographically</li>
-<li>if no trust registry is available, treat the macro as manually verified content rather than registry-trusted content</li>
+<li>keep the signed file and its matching <code>*.sig.json</code> file together</li>
+<li>run <code>protoparser verify macro ...</code> or <code>protoparser verify pml ...</code> to verify the detached signature cryptographically</li>
+<li>if no trust registry is available, treat the result as manually verified content rather than registry-trusted content</li>
+</ul>
+<p>Governance note:</p>
+<ul>
+<li>signing a normal <code>.pml</code> file is useful for controlled documents such as procedures, approvals, release checklists, policy texts, onboarding records, and reviewable internal records</li>
+<li>the detached sidecar proves integrity and authorship of the document file itself; it does not replace <code>@signatures</code> or <code>@approvals</code> blocks inside the ProtoML content</li>
 </ul>
 <p>If you want built-in macros to participate in the same trust model as external macros, they should also ship with detached <code>*.sig.json</code> files and a matching trusted author entry in a documented trust registry. Built-in bundled macros can also be trusted without a detached sidecar when they match the shipped built-in hash manifest and do not trigger hard risk flags, but that origin-based trust only applies to the known bundled files.</p>
 <h2>Examples</h2>
@@ -72,19 +95,25 @@ protoparser trust &quot;Meeting.pml&quot; -trustRegistry=&quot;./my-registry&quo
 Detached sidecar example without a registry:
 
 Author:
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out &quot;./keys/alice-private.pem&quot;
+openssl rsa -pubout -in &quot;./keys/alice-private.pem&quot; -out &quot;./keys/alice-public.pem&quot;
 protoparser sign macro &quot;./shared/warn_box.pml&quot; &quot;./keys/alice-private.pem&quot; &quot;Alice&quot; alice-main
 
 Distribute together:
 - ./shared/warn_box.pml
 - ./shared/warn_box.pml.sig.json
+- ./keys/alice-public.pem
 
 User:
 protoparser verify macro &quot;./shared/warn_box.pml&quot;
 
 Short examples:
 
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out &quot;./keys/alice-private.pem&quot;
+openssl rsa -pubout -in &quot;./keys/alice-private.pem&quot; -out &quot;./keys/alice-public.pem&quot;
 protoparser sign macro &quot;./macros/warn_box.pml&quot; &quot;./keys/alice-private.pem&quot; &quot;Alice&quot; alice-main
-protoparser sign pml &quot;./meetings/board.pml&quot; &quot;./keys/alice-private.pem&quot; &quot;Alice&quot; alice-main</code></pre>
+protoparser sign pml &quot;./meetings/board.pml&quot; &quot;./keys/alice-private.pem&quot; &quot;Alice&quot; alice-main
+protoparser verify pml &quot;./meetings/board.pml&quot; -trustRegistry=&quot;./authors-registry&quot;</code></pre>
   </main>
 </body>
 </html>

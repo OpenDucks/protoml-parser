@@ -2,13 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Governance Documents - ProtoML 1.4.2+build57</title>
+  <title>Governance Documents - ProtoML 1.4.2+build67</title>
   <link rel="stylesheet" href="help.css">
 </head>
 <body>
   <nav class="topnav">
     <a href="../toc.html">Contents</a>
-    <span class="version">ProtoML 1.4.2+build57</span>
+    <span class="version">ProtoML 1.4.2+build67</span>
   </nav>
   <main class="page">
     
@@ -36,6 +36,10 @@
         <pre><code>@@signature=lead
 @@approval=security
 @@ref=meta:record_id</code></pre>
+        <h2>Detached signatures for governance files</h2>
+        <pre><code>protoparser sign pml "./governance/release-approval.pml" "./keys/alice-private.pem" "Alice" alice-main
+protoparser verify pml "./governance/release-approval.pml" -trustRegistry="./authors-registry"</code></pre>
+        <p>Detached file signatures complement the in-document governance blocks. They help prove the integrity and authorship of the whole <code>.pml</code> file without replacing semantic fields such as <code>@signatures</code>, <code>@approvals</code>, or review metadata.</p>
         <h2>Supporting sections</h2>
         <ul>
           <li><code>@references</code> for source material or governing documents</li>

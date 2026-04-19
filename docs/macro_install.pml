@@ -9,6 +9,9 @@ The goal is to keep external macro packs in a project path such as `.protoml/mac
 These registries are macro package catalogs for install, sync, search, and trust lookup workflows.
 They are separate from `protoparser register "<dir>" ...`, which creates governance reports for document directories.
 
+The same registry file may also contain an `authors` section for trust lookup, but `macro_install` itself primarily cares about package-oriented fields such as `packages`, `manifest`, and `source`.
+It is also valid to keep package registries and author registries separate.
+
 Implemented command shape:
 
 `protoparser macro_install sync`
@@ -20,6 +23,11 @@ If a requested version is no longer present in the registry, sync falls back to 
 Registers an external macro registry source.
 Local file paths and local registry directories are supported for sync.
 Remote registry URLs can already be stored in the project definition for future use.
+
+Typical company variants:
+
+- an internal static web URL such as `https://intra.example.local/protoml/protoml.registry.json`
+- a shared local path such as `Z:\protoml-registry` or `/mnt/protoml-registry`
 
 `protoparser macro_install list_registries`
 Lists configured registry sources.

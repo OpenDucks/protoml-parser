@@ -2,13 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Own Macro Registry Guide - ProtoML 1.4.2+build57</title>
+  <title>Own Macro Registry Guide - ProtoML 1.4.2+build67</title>
   <link rel="stylesheet" href="help.css">
 </head>
 <body>
   <nav class="topnav">
     <a href="../toc.html">Contents</a>
-    <span class="version">ProtoML 1.4.2+build57</span>
+    <span class="version">ProtoML 1.4.2+build67</span>
   </nav>
   <main class="page">
     
@@ -17,6 +17,13 @@
         <h2>What this workflow is for</h2>
         <p>Use a custom macro registry when you want a reusable, curated macro catalog for one team, one company, or one document domain instead of copying macro files between repositories.</p>
         <p>This guide is about macro package registries only. It is not about <code>protoparser register "&lt;dir&gt;"</code>, which creates governance and status reports for document collections.</p>
+        <h2>Where a company registry can live</h2>
+        <ul>
+          <li>a simple internal web server that serves <code>protoml.registry.json</code> and pack files over HTTP or HTTPS</li>
+          <li>a shared local path such as <code>Z:\protoml-registry</code> or <code>/mnt/protoml-registry</code></li>
+          <li>an intranet static host or normal artifact/file server</li>
+        </ul>
+        <p>You do not need a special registry backend. A company registry can be just static JSON plus files on a plain web server or network path.</p>
         <h2>Choose the right trust path first</h2>
         <ul>
           <li>Use bundled <code>{{macro_dir}}</code> macros first when the shipped macro set already covers the need</li>
@@ -103,6 +110,14 @@ protoparser macro_install sync</code></pre>
   "packages": []
 }</code></pre>
         <p>After that, consumers can run <code>verify</code> or <code>trust</code> with <code>-trustRegistry=...</code> and the macro can resolve to <code>trusted</code> if it has no hard risk flags such as JavaScript or external URLs.</p>
+        <h2>Registries can be split or combined</h2>
+        <p>A ProtoML registry does not have to do everything at once. A registry may publish:</p>
+        <ul>
+          <li>package entries in <code>packages</code> for install, sync, and search workflows</li>
+          <li>author trust entries in <code>authors</code> for trust, verify, and validate workflows</li>
+          <li>or both in one combined registry</li>
+        </ul>
+        <p>That means teams can keep macro delivery in one registry and trusted authors in another if that better matches their release and security process.</p>
         <h2>Recommended trust-aware workflow</h2>
         <ol>
           <li>Start with bundled macros when possible</li>
@@ -144,9 +159,15 @@ protoparser macro_install sync</code></pre>
         <ol>
           <li>Add the remote registry to the project with <code>protoparser macro_install add_registry "https://example.org/protoml.registry.json"</code> if it should be part of the project config</li>
           <li>Search it explicitly with <code>protoparser macro_install search "meeting" "https://example.org/protoml.registry.json"</code> if it should only be queried ad hoc</li>
-          <li>Use <code>-trustRegistry=...</code> with <code>trust</code>, <code>verify</code>, or <code>validate -trust=...</code> when the remote registry should also act as an author trust source</li>
+          <li>Use repeatable <code>-trustRegistry=...</code> flags with <code>trust</code>, <code>verify</code>, or <code>validate -trust=...</code> when one or more registries should act as author trust sources</li>
           <li>Review the registry owner and pack maintainers before treating the registry as trusted</li>
         </ol>
+        <h2>Local company registry variant</h2>
+        <p>Some teams do not want HTTP hosting at all. In that case, the same registry can live in a shared directory or mounted network path.</p>
+        <pre><code>protoparser macro_install add_registry "Z:\protoml-registry"
+protoparser macro_install add_registry "/mnt/protoml-registry"
+protoparser validate "./governance/release-checklist.pml" -trust=strict -trustRegistry="Z:\protoml-registry"</code></pre>
+        <p>This works well for internal-only environments where a reviewed file share or NFS path is easier to operate than a hosted web endpoint.</p>
         <h2>Operational notes</h2>
         <ul>
           <li>Remote registries are best for discovery and trust lookup first</li>
@@ -175,6 +196,7 @@ protoparser macro_install sync</code></pre>
           <li><a href="03_cli_workflows.html">CLI Reference</a></li>
           <li><a href="11_examples_cookbook.html">Examples Cookbook</a></li>
           <li><a href="13_macro_security_trust_model.html">Macro Security And Trust Model</a></li>
+          <li><a href="15a_signed_governance_workflow.html">Signed Governance Workflow Tutorial</a></li>
         </ul>
       
   </main>

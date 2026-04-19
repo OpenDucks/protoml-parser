@@ -17,6 +17,14 @@ It highlights:
 - documents with open tasks
 - status distributions across the directory
 
+For governance-sensitive `.pml` files, ProtoML also supports detached file signatures through:
+
+- `protoparser sign pml "./file.pml" ...`
+- `protoparser verify pml "./file.pml" ...`
+- `protoparser trust "./file.pml" -trustRegistry=...`
+
+That signature workflow is complementary to directory-level register reports.
+
 Use it on document directories rather than broad repository roots when possible.
 
 =examples:

@@ -2,13 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Trust - ProtoML 1.4.2+build57</title>
+  <title>Trust - ProtoML 1.4.2+build67</title>
   <link rel="stylesheet" href="help.css">
 </head>
 <body>
   <nav class="topnav">
     <a href="../toc.html">Contents</a>
-    <span class="version">ProtoML 1.4.2+build57</span>
+    <span class="version">ProtoML 1.4.2+build67</span>
   </nav>
   <main class="page">
     <h1>Trust</h1>
@@ -35,13 +35,69 @@
 <li>bundled built-in macros from the shipped macro directory can still resolve to <code>trusted</code> without a detached sidecar if they match the built-in hash manifest and have no hard risk flags</li>
 <li>extra or modified files inside that directory are not automatically trusted just because they live next to bundled macros</li>
 </ul>
-<p>Use <code>-trustRegistry=...</code> to point to a local registry directory, a registry JSON file, or a remote registry URL.</p>
+<p>If a nearest project <code>protoml.macros.json</code> exists next to the target file or in one of its parent directories, <code>trust</code>, <code>verify</code>, and <code>validate</code> automatically use its configured <code>registries</code> entries.</p>
+<p><code>-trustRegistry=...</code> is a trust lookup flag, not its own subcommand. You pass it to <code>trust</code>, <code>verify</code>, or <code>validate</code> when those commands should consult extra registry sources beyond the discovered project configuration.</p>
+<p>Accepted source forms:</p>
+<ul>
+<li>a local registry directory containing <code>protoml.registry.json</code></li>
+<li>a direct path to a registry JSON file</li>
+<li>an HTTP or HTTPS registry URL</li>
+</ul>
+<p>The flag is repeatable, so you can combine multiple registry sources:</p>
+<ul>
+<li>one registry that only publishes trusted authors</li>
+<li>one registry that mainly publishes macro packages</li>
+<li>one internal reviewed registry plus one external discovery registry</li>
+</ul>
+<p>What the flag actually does:</p>
+<ul>
+<li>it adds author/key lookup sources on top of detached signature verification</li>
+<li>it does not override hard risk flags such as JavaScript or external URLs</li>
+<li>it does not make unsigned files automatically <code>trusted</code></li>
+<li>it does not make package metadata authoritative; the <code>authors</code> list is the relevant trust input</li>
+<li>all provided registry sources are merged for author lookup; the first matching author/key pair decides the reported match</li>
+<li>registries with no <code>authors</code> section simply contribute no author trust data</li>
+</ul>
+<p>Command behavior:</p>
+<ul>
+<li><code>trust</code> loads local and remote registry sources and evaluates the full document tree</li>
+<li><code>verify</code> loads local and remote registry sources and reports signature plus author trust for a single file</li>
+<li><code>validate</code> uses synchronous trust analysis during validation; local registry directories/files work there, but remote URLs are skipped rather than fetched</li>
+<li>when the target file lives inside a project with <code>protoml.macros.json</code>, all three commands auto-discover those configured registries from the nearest project config file</li>
+<li>repeated <code>-trustRegistry=...</code> flags are supported on all three commands</li>
+</ul>
+<p>Fully specified macro trust classification:</p>
+<ul>
+<li><code>trusted</code>: no hard risk flag, not a modified built-in, and either</li>
+<li>the macro is a known bundled built-in whose file hash matches the shipped built-in manifest, or</li>
+<li>the detached signature is valid and the matching registry author is marked <code>trusted</code></li>
+<li><code>unknown</code>: not <code>untrusted</code>, but also not eligible for <code>trusted</code></li>
+<li>typical cases are unsigned files, valid signatures whose author is not listed in any registry, or authors explicitly classified as <code>unknown</code></li>
+<li><code>untrusted</code>: any of the following is enough</li>
+<li>contains JavaScript</li>
+<li>contains external URLs</li>
+<li>detached signature is invalid</li>
+<li>signing author is marked <code>untrusted</code></li>
+<li>bundled built-in macro file was modified and no longer matches the shipped hash</li>
+</ul>
+<p>Fully specified document (<code>.pml</code>) trust classification:</p>
+<ul>
+<li><code>trusted</code>: detached signature is valid, the matching registry author is <code>trusted</code>, and the document does not use any <code>untrusted</code> macros or import any <code>untrusted</code> <code>.pml</code> files</li>
+<li><code>unknown</code>: not <code>untrusted</code>, but also not signature-plus-registry-<code>trusted</code></li>
+<li>typical cases are unsigned documents, valid signatures without a matching trusted registry author, or documents that only use <code>unknown</code> dependencies</li>
+<li><code>untrusted</code>: any of the following is enough</li>
+<li>uses an <code>untrusted</code> macro</li>
+<li>imports an <code>untrusted</code> <code>.pml</code> file</li>
+<li>detached signature is invalid</li>
+<li>signing author is marked <code>untrusted</code></li>
+</ul>
 <p>How to read common trust results:</p>
 <ul>
 <li>a bundled <code>{{macro_dir}}</code> macro can be <code>trusted</code> without a detached signature if it is one of the known shipped built-ins and has no hard risk flag</li>
 <li>a bundled built-in macro can still be <code>untrusted</code> when it contains JavaScript or external URLs</li>
 <li>a normal local macro outside the built-in set is usually <code>unknown</code> until you sign it and optionally classify its author through a registry</li>
 <li>an imported <code>.pml</code> file can also stay <code>unknown</code> if it has no signature-based trust information</li>
+<li>a signed governance <code>.pml</code> file can become <code>trusted</code> through the same author-registry workflow as a macro file</li>
 </ul>
 <p>Recommended workflow choices:</p>
 <p>1. Use built-in bundled macros through <code>{{macro_dir}}</code> when you want low-friction trusted defaults. 2. Use your own unsigned local macros when experimentation matters more than formal trust, and expect <code>unknown</code>. 3. Sign custom macros and add trusted authors to a registry when you want custom macros to resolve to <code>trusted</code>. 4. Review any macro with JavaScript or external URLs manually, even when it is bundled or signed.</p>
@@ -59,6 +115,7 @@
 </ul>
 <h2>Examples</h2>
 <pre><code>protoparser trust &quot;Meeting.pml&quot;
+protoparser verify &quot;./macros/warn_box.pml&quot;
 protoparser trust &quot;Meeting.pml&quot; -trustRegistry=&quot;./my-registry&quot;
 protoparser -vv trust &quot;Meeting.pml&quot; -trustRegistry=&quot;https://example.org/protoml.registry.json&quot;</code></pre>
   </main>

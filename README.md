@@ -851,16 +851,24 @@ Dedicated trust inspection is available via:
 
 ```bash
 protoparser trust "test.pml"
-protoparser validate "test.pml" -trust=strict -trustRegistry="./my-registry"
+protoparser verify "./governance/release-approval.pml"
+protoparser validate "test.pml" -trust=strict -trustRegistry="./authors-registry" -trustRegistry="./macro-registry"
 protoparser sign macro "./macros/warn_box.pml" "./keys/alice-private.pem" "Alice" alice-main
+protoparser sign pml "./governance/release-approval.pml" "./keys/alice-private.pem" "Alice" alice-main
 protoparser verify macro "./macros/warn_box.pml" -trustRegistry="./my-registry"
 ```
 
 The trust model is intentionally lightweight:
 
-- `trusted`: valid signature by a trusted registry author and no hard risk flags
-- `unknown`: unsigned or not registry-matched, but no hard risk flag
-- `untrusted`: invalid signature, untrusted author, JavaScript, external URLs, or imported untrusted content
+- `trusted`: either a known bundled built-in macro whose hash matches the shipped built-in manifest and has no hard risk flag, or content with a valid signature by a registry author marked `trusted`
+- `unknown`: not `untrusted`, but also not eligible for `trusted`; typical cases are unsigned content or valid signatures without a matching trusted registry author
+- `untrusted`: invalid signature, author marked `untrusted`, JavaScript, external URLs, modified built-in macros, or imported/used untrusted content
+
+`-trustRegistry=...` is a flag for `trust`, `verify`, and `validate`, not a standalone subcommand.
+It accepts a local registry directory, a direct registry JSON path, or an HTTP/HTTPS registry URL.
+It is repeatable, so multiple registry sources can be merged in one command.
+If a nearest `protoml.macros.json` exists next to the target file or in one of its parent directories, those project registries are auto-discovered even without the flag.
+In practice it adds author/key lookup sources; it does not override hard risk flags and does not make unsigned content trusted.
 
 ### Macro usage
 
