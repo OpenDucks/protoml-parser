@@ -486,12 +486,12 @@ function upsertRegistryPack(registryTarget, packDir) {
     trust: manifest.trust || null,
     manifest: relativePath(path.dirname(registryFile), manifestFile),
     source: relativePath(path.dirname(registryFile), resolvedPackDir),
-    dependencies: Array.isArray(manifest.dependencies) ? manifest.dependencies : [],
   };
 
   const index = registry.packages.findIndex((pkg) => pkg.name === entry.name);
   if (index >= 0) {
     registry.packages[index] = { ...registry.packages[index], ...entry };
+    delete registry.packages[index].dependencies;
   } else {
     registry.packages.push(entry);
   }

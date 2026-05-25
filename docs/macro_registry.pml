@@ -112,6 +112,40 @@ Macro pack dependencies can be declared in `protoml-pack.json`.
 During `protoparser macro_install sync`, dependencies are resolved automatically.
 If a dependency entry omits a registry, the current registry is assumed.
 
+How pack dependencies and registry metadata work together:
+
+- the project `protoml.macros.json` declares direct packages requested by the project
+- each package's `protoml-pack.json` declares dependencies needed by that package
+- the registry `packages` list tells ProtoML which package versions exist and where each package's manifest and source directory are
+- `protoparser macro_install registry_add` indexes package location metadata and does not duplicate the dependency graph
+- during `sync`, ProtoML resolves the package through the registry, then reads the package's `protoml-pack.json` for dependencies
+- dependency entries without `registry` resolve from the same registry as the parent package
+- dependency entries with `registry` may refer to a registry by its `name` or by the configured source path/URL
+- transitive dependencies do not need to be listed in the project file; they are installed automatically and written to the lock file
+
+These are install-time pack dependencies.
+They do not create a runtime call relationship between macros.
+A macro template cannot currently invoke another macro and have ProtoML expand that nested call.
+Dependencies are useful for publishing layered packs that should travel together, such as a domain-specific pack plus a shared base pack.
+After `sync`, macros from both packs are available through the generated import index and can be used directly by the document.
+
+Example:
+
+```json
+{
+  "name": "contract-kit",
+  "version": "1.0.0",
+  "macros": ["macros/contract_clause.pml"],
+  "dependencies": [
+    { "name": "base-kit", "version": "1.0.0" }
+  ]
+}
+```
+
+If a project requests only `contract-kit`, `sync` installs `contract-kit`, reads its manifest, then resolves and installs `base-kit` from the same registry.
+The document can then use macros from both packs after importing `.protoml/macro-packs/macros.index.pml`.
+Older registry files may still contain copied `dependencies` fields from earlier registry generation, but new registries should keep dependency declarations only in the pack manifest.
+
 Trust guidance:
 
 - the registry `authors` list is the preferred place for author trust classification

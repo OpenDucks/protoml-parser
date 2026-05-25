@@ -7,20 +7,14 @@
       "version": "1.0.0",
       "description": "ProtoML macro pack: base-kit",
       "manifest": "packs/base-kit/protoml-pack.json",
-      "source": "packs/base-kit",
-      "dependencies": []
+      "source": "packs/base-kit"
     },
     {
       "name": "contract-kit",
       "version": "1.0.0",
       "description": "ProtoML macro pack: contract-kit",
       "manifest": "packs/contract-kit/protoml-pack.json",
-      "source": "packs/contract-kit",
-      "dependencies": [
-        {
-          "name": "base-kit"
-        }
-      ]
+      "source": "packs/contract-kit"
     }
   ]
 }

@@ -70,6 +70,40 @@ Removes a pack entry from a registry file.
 Dependencies declared in `protoml-pack.json` are resolved during `sync`.
 If a dependency does not declare a registry explicitly, the current registry is used.
 
+Dependency roles:
+
+- `protoml.macros.json` lists direct project packages
+- `protoml-pack.json` lists transitive package dependencies for a pack
+- `protoml.registry.json` lists available package versions, manifest paths, and source paths
+- `registry_add` indexes package location metadata and does not duplicate the dependency graph
+- `sync` still reads the pack's `protoml-pack.json` when installing, so the manifest is the main source of dependency truth
+
+These dependencies are install-time pack dependencies.
+They do not mean that one macro can call another macro.
+ProtoML currently expands `@@macro=...` usages from the meeting document against the loaded macro cache, and macro templates are not recursively parsed as new ProtoML commands.
+The practical result is that a dependency makes another pack available in the same project install and generated import index.
+
+Dependency entries may be simple strings:
+
+```json
+"dependencies": ["base-kit"]
+```
+
+or objects with a version and optional registry:
+
+```json
+"dependencies": [
+  { "name": "base-kit", "version": "1.0.0" },
+  { "name": "shared-ui", "version": "2.0.0", "registry": "company-registry" }
+]
+```
+
+When `registry` is omitted, the dependency is resolved from the same registry that supplied the parent package.
+When `registry` is present, it may match either the registry name from `protoml.registry.json` or the source configured in `protoml.macros.json`.
+The project file only needs to list the top-level packages it wants; dependencies are installed automatically and recorded in the lock file.
+After importing `.protoml/macro-packs/macros.index.pml`, the document can use macros from both the requested pack and its dependency packs.
+Older registry files may still contain copied `dependencies` fields, but new registry entries should keep dependencies in `protoml-pack.json`.
+
 The generated import index can be used directly in a ProtoML document:
 
 `@macros_import ".protoml/macro-packs/macros.index.pml"`

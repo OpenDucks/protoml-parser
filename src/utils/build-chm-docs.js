@@ -867,6 +867,27 @@ protoparser macro_install sync</code></pre>
         <p>Or install in one step:</p>
         <pre><code>protoparser macro_install install "meeting-kit" 1.0.0</code></pre>
         <p>The project then receives the installed files in <code>.protoml/macro-packs/</code> and a generated <code>macros.index.pml</code>.</p>
+        <h2>How pack dependencies are resolved</h2>
+        <p>The project file and pack manifests have different jobs. <code>protoml.macros.json</code> lists the packs the project asks for directly. Each installed pack's <code>protoml-pack.json</code> lists the packs it needs through <code>dependencies</code>. The registry file lists available pack versions and where their manifests and files live.</p>
+        <p>Dependencies are install-time pack dependencies, not runtime macro calls. A macro template cannot currently invoke another macro through <code>@@macro=...</code>. Instead, dependencies make sure related packs are installed together and that all installed macros are added to the generated import index.</p>
+        <pre><code>{
+  "name": "contract-kit",
+  "version": "1.0.0",
+  "macros": ["macros/contract_clause.pml"],
+  "dependencies": [
+    { "name": "base-kit", "version": "1.0.0" }
+  ]
+}</code></pre>
+        <p>With both packs in the same registry, a project can request only the top-level pack:</p>
+        <pre><code>{
+  "version": 1,
+  "registries": ["./my-registry"],
+  "packages": [
+    { "name": "contract-kit", "version": "1.0.0" }
+  ]
+}</code></pre>
+        <p>During <code>macro_install sync</code>, ProtoML installs <code>contract-kit</code>, reads its manifest, resolves <code>base-kit</code> from the same registry, and records both packs in the lock file and generated import index. The document can then use macros from both packs after importing that generated index.</p>
+        <p><code>registry_add</code> indexes package location metadata in <code>protoml.registry.json</code> and does not duplicate the dependency graph. Dependencies belong in <code>protoml-pack.json</code>, which <code>sync</code> reads when installing. A dependency can name another registry with <code>registry</code>; that value may match either the registry name or the configured registry source. Older registry files may still contain copied <code>dependencies</code> fields, but new registries should keep dependency declarations only in the pack manifest.</p>
         <h2>Bind the registry macros into a meeting file</h2>
         <pre><code>@macros_import ".protoml/macro-packs/macros.index.pml"
 @protocol "Architecture Review - {{date}}"
@@ -1647,33 +1668,45 @@ protoparser register "./governance" html</code></pre>
         </ul>
       `,
     },
-    /*{
+    {
       file: "15f_release_ops_workflow.html",
       title: "Workflow 6: Release Operations Without A Board Story",
       group: "Workflow Guides",
       keywords: ["workflow", "release operations", "validate", "release checks", "practical release", "ops"],
       body: `
         <h1>Workflow 6: Release Operations Without A Board Story</h1>
-        <p>Not every workflow revolves around Board approval. Sometimes Release Operations just needs a practical, low-drama process for checking a release package, its supporting ProtoML records, and the generated artifacts before publication.</p>
+        <p>Not every workflow revolves around Board approval. Sometimes Release Operations just needs a practical, low-drama process for checking a ProtoML delivery set, its supporting records, and the files that will actually be handed to other people.</p>
         <h2>The scenario</h2>
-        <p>Lea is now working on the operational release checklist itself. This file may not need a board signature at all. It still needs to be structurally valid, internally reviewable, and consistent with the generated release artifacts.</p>
+        <p>Lea is now working on the operational release checklist itself. This file may not need a board signature at all. It still needs to be structurally valid, internally reviewable, and consistent with the ProtoML files, imports, macros, and rendered outputs that will be distributed.</p>
         <h2>Validate the release record</h2>
         <pre><code>protoparser validate "./governance/release-checklist.pml" -trust=warn</code></pre>
         <p>Here the goal is not necessarily strict signature enforcement. The goal is to catch structural problems before publishing.</p>
         <h2>Inspect the release-related document set</h2>
         <pre><code>protoparser register "./governance" statistics</code></pre>
         <p>This gives Lea confidence that the current release record sits inside a healthy governance set.</p>
-        <h2>Check the release artifacts themselves</h2>
-        <pre><code>npm run build:web
-npm run build:chm
-npm run build:exe</code></pre>
-        <p>And before publishing:</p>
-        <pre><code>npm run bump</code></pre>
+        <h2>Prepare the delivery form</h2>
+        <p>Lea now decides what the receiver should actually get:</p>
+        <ul>
+          <li>the editable <code>.pml</code> source tree when the receiver should keep authoring</li>
+          <li>a bundled snapshot when the receiver should get one self-contained handoff</li>
+          <li>HTML or PDF when the receiver only needs a reader-facing result</li>
+        </ul>
+        <pre><code>protoparser bundle "./governance/release-checklist.pml"
+protoparser "./governance/release-checklist.pml" html
+protoparser "./governance/release-checklist.pml" pdf</code></pre>
+        <h2>Check what must travel with the file</h2>
+        <ul>
+          <li>imported <code>.pml</code> files when the delivery is not bundled</li>
+          <li>local macros when the document depends on them</li>
+          <li>matching <code>*.sig.json</code> sidecars when signed files are distributed</li>
+          <li>referenced local assets such as images or attachments</li>
+        </ul>
+        <p>Bundled macros from <code>{{macro_dir}}</code> do not need to be shipped separately when the receiving side already uses the standard ProtoML installation.</p>
         <h2>Why this workflow is different</h2>
         <ul>
           <li>it is about release readiness, not primarily signer identity</li>
-          <li>trust checks may still matter, but they are only one part of the release checklist</li>
-          <li>artifact consistency, CHM behavior, and checksum correctness are equally important</li>
+          <li>trust checks may still matter, but they are only one part of the delivery checklist</li>
+          <li>missing imports, missing assets, or missing sidecars are often the real failure mode</li>
         </ul>
         <h2>When the registry story comes back</h2>
         <p>If the release record uses external macros, or if trust lookups come from more than one place, Lea may need to combine an internal author registry with a separate macro registry.</p>
@@ -1687,7 +1720,7 @@ npm run build:exe</code></pre>
           <li><a href="13_macro_security_trust_model.html">Macro Security And Trust Model</a></li>
         </ul>
       `,
-    },*/
+    },
     {
       file: "15g_split_registry_workflow.html",
       title: "Workflow 7: Internal Author Trust Plus External Macro Registry",

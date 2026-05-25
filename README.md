@@ -819,6 +819,45 @@ Dependencies declared in `protoml-pack.json` are resolved during `macro_install 
 If a dependency does not specify a registry explicitly, the current registry is used.
 If a requested package version is no longer available in the registry, `macro_install sync` falls back to the newest available registry version and updates the project package entry to match.
 
+The project file and pack manifests play different roles:
+
+- `protoml.macros.json` lists the packs the project asks for directly.
+- Each installed pack's `protoml-pack.json` lists the packs it needs through `dependencies`.
+- `protoml.registry.json` lists available pack versions and where their manifests and files live.
+- `registry_add` indexes the pack's name, version, manifest path, and source path, but does not duplicate the pack dependency graph.
+
+Dependencies are install-time pack dependencies, not macro-to-macro calls.
+A macro template cannot currently invoke another macro through `@@macro=...`.
+Instead, dependencies make sure related packs are installed together and that all installed macros are added to the generated import index.
+This is useful when one pack is meant to be used alongside another pack, for example a domain pack that assumes a shared base pack is available to the document author.
+
+Example dependency in a pack manifest:
+
+```json
+{
+  "name": "contract-kit",
+  "version": "1.0.0",
+  "macros": ["macros/contract_clause.pml"],
+  "dependencies": [
+    { "name": "base-kit", "version": "1.0.0" }
+  ]
+}
+```
+
+With both packs in the same registry, a project only has to request the top-level pack:
+
+```json
+{
+  "version": 1,
+  "registries": ["./my-registry"],
+  "packages": [
+    { "name": "contract-kit", "version": "1.0.0" }
+  ]
+}
+```
+
+During `macro_install sync`, ProtoML installs `contract-kit`, reads its manifest, resolves `base-kit` from the same registry, and writes both packs into the lock file and generated macro import index. The document can then use macros from both packs after importing the generated index. A dependency can also name another registry with `registry`, using either the registry name or the configured registry source. Older registry files may still contain copied `dependencies` fields, but the pack manifest should be treated as the source of truth.
+
 Use the generated index in a document with:
 
 ```plaintext
@@ -1122,14 +1161,15 @@ npm install -g .
 
 ProtoML is not:
 
-- a programming language
-- a general-purpose template engine
-- full Markdown
-- a runtime with loops or arbitrary execution
+- a general-purpose programming language
+- a full Markdown replacement
+- a generic templating engine
+- an unrestricted execution runtime (macros are controlled and trust-bound)
 
 ProtoML is:
 
-- a readable format for structured meeting documents
-- a lightweight task and note format with references
-- a modular document format with imports and macros
-- a good fit for HTML views, viewers, and structured export pipelines
+- a structured document format for meetings, documentation and governance
+- a readable and consistent way to define tasks, topics and references
+- a modular system with imports and macros
+- a document pipeline with validation, analysis and structured outputs
+- a trust-aware format supporting signing and verification of content

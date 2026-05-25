@@ -2,13 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Macro Registry - ProtoML 1.4.2+build67</title>
+  <title>Macro Registry - ProtoML 1.4.2-rev1+build68</title>
   <link rel="stylesheet" href="help.css">
 </head>
 <body>
   <nav class="topnav">
     <a href="../toc.html">Contents</a>
-    <span class="version">ProtoML 1.4.2+build67</span>
+    <span class="version">ProtoML 1.4.2-rev1+build68</span>
   </nav>
   <main class="page">
     <h1>Macro Registry</h1>
@@ -100,6 +100,28 @@
 <p><code>.protoml/macro-packs/</code></p>
 <p>That keeps the repository clean while still making the project reproducible through a single definition file.</p>
 <p>Macro pack dependencies can be declared in <code>protoml-pack.json</code>. During <code>protoparser macro_install sync</code>, dependencies are resolved automatically. If a dependency entry omits a registry, the current registry is assumed.</p>
+<p>How pack dependencies and registry metadata work together:</p>
+<ul>
+<li>the project <code>protoml.macros.json</code> declares direct packages requested by the project</li>
+<li>each package's <code>protoml-pack.json</code> declares dependencies needed by that package</li>
+<li>the registry <code>packages</code> list tells ProtoML which package versions exist and where each package's manifest and source directory are</li>
+<li><code>protoparser macro_install registry_add</code> indexes package location metadata and does not duplicate the dependency graph</li>
+<li>during <code>sync</code>, ProtoML resolves the package through the registry, then reads the package's <code>protoml-pack.json</code> for dependencies</li>
+<li>dependency entries without <code>registry</code> resolve from the same registry as the parent package</li>
+<li>dependency entries with <code>registry</code> may refer to a registry by its <code>name</code> or by the configured source path/URL</li>
+<li>transitive dependencies do not need to be listed in the project file; they are installed automatically and written to the lock file</li>
+</ul>
+<p>These are install-time pack dependencies. They do not create a runtime call relationship between macros. A macro template cannot currently invoke another macro and have ProtoML expand that nested call. Dependencies are useful for publishing layered packs that should travel together, such as a domain-specific pack plus a shared base pack. After <code>sync</code>, macros from both packs are available through the generated import index and can be used directly by the document.</p>
+<p>Example:</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;contract-kit&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;macros&quot;: [&quot;macros/contract_clause.pml&quot;],
+  &quot;dependencies&quot;: [
+    { &quot;name&quot;: &quot;base-kit&quot;, &quot;version&quot;: &quot;1.0.0&quot; }
+  ]
+}</code></pre>
+<p>If a project requests only <code>contract-kit</code>, <code>sync</code> installs <code>contract-kit</code>, reads its manifest, then resolves and installs <code>base-kit</code> from the same registry. The document can then use macros from both packs after importing <code>.protoml/macro-packs/macros.index.pml</code>. Older registry files may still contain copied <code>dependencies</code> fields from earlier registry generation, but new registries should keep dependency declarations only in the pack manifest.</p>
 <p>Trust guidance:</p>
 <ul>
 <li>the registry <code>authors</code> list is the preferred place for author trust classification</li>

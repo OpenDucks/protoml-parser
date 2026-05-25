@@ -562,6 +562,34 @@
 		<param name="Local" value="html_docs/15e_governance_portfolio_workflow.html">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Workflow 6: Release Operations Without A Board Story">
+		<param name="Local" value="html_docs/15f_release_ops_workflow.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="workflow">
+		<param name="Local" value="html_docs/15f_release_ops_workflow.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="release operations">
+		<param name="Local" value="html_docs/15f_release_ops_workflow.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="validate">
+		<param name="Local" value="html_docs/15f_release_ops_workflow.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="release checks">
+		<param name="Local" value="html_docs/15f_release_ops_workflow.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="practical release">
+		<param name="Local" value="html_docs/15f_release_ops_workflow.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ops">
+		<param name="Local" value="html_docs/15f_release_ops_workflow.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Workflow 7: Internal Author Trust Plus External Macro Registry">
 		<param name="Local" value="html_docs/15g_split_registry_workflow.html">
 		</OBJECT>

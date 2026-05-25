@@ -8,7 +8,7 @@ Full-text search=Yes
 Index file=Index.hhk
 Language=0x409 English (United States)
 Title=ProtoML Help
-Version=1.4.2+build67
+Version=1.4.2-rev1+build68
 
 [FILES]
 toc.html
@@ -39,6 +39,7 @@ html_docs/15b_author_registry_workflow.html
 html_docs/15c_sign_governance_workflow.html
 html_docs/15d_validate_governance_workflow.html
 html_docs/15e_governance_portfolio_workflow.html
+html_docs/15f_release_ops_workflow.html
 html_docs/15g_split_registry_workflow.html
 html_docs/16_release_and_packaging.html
 html_docs/ref_analyze.html

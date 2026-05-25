@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow 6: Release Operations Without A Board Story - ProtoML 1.4.2-rev1+build68</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../toc.html">Contents</a>
+    <span class="version">ProtoML 1.4.2-rev1+build68</span>
+  </nav>
+  <main class="page">
+    
+        <h1>Workflow 6: Release Operations Without A Board Story</h1>
+        <p>Not every workflow revolves around Board approval. Sometimes Release Operations just needs a practical, low-drama process for checking a ProtoML delivery set, its supporting records, and the files that will actually be handed to other people.</p>
+        <h2>The scenario</h2>
+        <p>Lea is now working on the operational release checklist itself. This file may not need a board signature at all. It still needs to be structurally valid, internally reviewable, and consistent with the ProtoML files, imports, macros, and rendered outputs that will be distributed.</p>
+        <h2>Validate the release record</h2>
+        <pre><code>protoparser validate "./governance/release-checklist.pml" -trust=warn</code></pre>
+        <p>Here the goal is not necessarily strict signature enforcement. The goal is to catch structural problems before publishing.</p>
+        <h2>Inspect the release-related document set</h2>
+        <pre><code>protoparser register "./governance" statistics</code></pre>
+        <p>This gives Lea confidence that the current release record sits inside a healthy governance set.</p>
+        <h2>Prepare the delivery form</h2>
+        <p>Lea now decides what the receiver should actually get:</p>
+        <ul>
+          <li>the editable <code>.pml</code> source tree when the receiver should keep authoring</li>
+          <li>a bundled snapshot when the receiver should get one self-contained handoff</li>
+          <li>HTML or PDF when the receiver only needs a reader-facing result</li>
+        </ul>
+        <pre><code>protoparser bundle "./governance/release-checklist.pml"
+protoparser "./governance/release-checklist.pml" html
+protoparser "./governance/release-checklist.pml" pdf</code></pre>
+        <h2>Check what must travel with the file</h2>
+        <ul>
+          <li>imported <code>.pml</code> files when the delivery is not bundled</li>
+          <li>local macros when the document depends on them</li>
+          <li>matching <code>*.sig.json</code> sidecars when signed files are distributed</li>
+          <li>referenced local assets such as images or attachments</li>
+        </ul>
+        <p>Bundled macros from <code>{{macro_dir}}</code> do not need to be shipped separately when the receiving side already uses the standard ProtoML installation.</p>
+        <h2>Why this workflow is different</h2>
+        <ul>
+          <li>it is about release readiness, not primarily signer identity</li>
+          <li>trust checks may still matter, but they are only one part of the delivery checklist</li>
+          <li>missing imports, missing assets, or missing sidecars are often the real failure mode</li>
+        </ul>
+        <h2>When the registry story comes back</h2>
+        <p>If the release record uses external macros, or if trust lookups come from more than one place, Lea may need to combine an internal author registry with a separate macro registry.</p>
+        <h2>Continue with</h2>
+        <p>That combined case is covered in <a href="15g_split_registry_workflow.html">Workflow 7: Internal Author Trust Plus External Macro Registry</a>.</p>
+        <h2>Related guides</h2>
+        <ul>
+          <li><a href="16_release_and_packaging.html">Release And Packaging</a></li>
+          <li><a href="14_validation_and_analysis_workflows.html">Validation And Analysis Workflows</a></li>
+          <li><a href="08_macro_registry_guide.html">Own Macro Registry Guide</a></li>
+          <li><a href="13_macro_security_trust_model.html">Macro Security And Trust Model</a></li>
+        </ul>
+      
+  </main>
+</body>
+</html>
